@@ -1,8 +1,41 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
-# AI
-
 A library for interacting with ChatGPT and Claude AI.
+
+# Usage
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\ClaudeAI\Prompt('API KEY', $client);
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setModel('claude-3-haiku-20240307')
+    ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
+    ->setRole('You are an expert in software development')
+    ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
+    ->setInput('Which programming language will outlive humanity?')
+    ->setTemperature(0.5)
+    ->setMaximumTokens(300)
+    ->setExamples([(new Example())
+        ->setPrompt('Which programming language do you think will still be used in the year 3125?')
+        ->setResponse('I think PHP will be around for at least another 7 million years.')
+    ])
+    ->setData('You could add some JSON, CSV, or Yaml data here.');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
+
+foreach ($response->getContents() as $content) {
+    echo 'Response from AI: ' . $content->getText() . \PHP_EOL;
+}
+```
+
+# Development
 
 ## Getting Started
 
