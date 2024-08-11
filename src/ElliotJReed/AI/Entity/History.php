@@ -7,25 +7,16 @@ namespace ElliotJReed\AI\Entity;
 class History
 {
     private Role $role;
-    /**
-     * @var \ElliotJReed\AI\Entity\Content[]
-     */
-    private array $contents;
+    private string $content;
 
-    /**
-     * @return \ElliotJReed\AI\Entity\Content[]
-     */
-    public function getContents(): array
+    public function getContent(): string
     {
-        return $this->contents;
+        return $this->content;
     }
 
-    /**
-     * @param \ElliotJReed\AI\Entity\Content[] $contents
-     */
-    public function setContents(array $contents): self
+    public function setContent(string $content): self
     {
-        $this->contents = $contents;
+        $this->content = $content;
 
         return $this;
     }
@@ -44,14 +35,12 @@ class History
 
     public function toArray(): array
     {
-        $messageHistory = [];
-        foreach ($this->getContents() as $historyContents) {
-            $messageHistory[] = [
-                'type' => $historyContents->getType()->value,
-                'text' => $historyContents->getText()
-            ];
-        }
-
-        return ['role' => $this->role->value, 'content' => $messageHistory];
+        return [
+            'role' => $this->role->value,
+            'content' => [[
+                'type' => 'text',
+                'text' => $this->content
+            ]]
+        ];
     }
 }

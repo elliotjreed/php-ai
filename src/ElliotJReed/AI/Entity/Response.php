@@ -10,7 +10,7 @@ class Response
     private string $id;
     private Role $role;
     private string $model;
-    private array $contents = [];
+    private string $content;
     private string $stopReason;
     private ?string $stopSequence = null;
     private Usage $usage;
@@ -67,17 +67,14 @@ class Response
         return $this;
     }
 
-    /**
-     * @return \ElliotJReed\AI\Entity\Content[]
-     */
-    public function getContents(): array
+    public function getContent(): string
     {
-        return $this->contents;
+        return $this->content;
     }
 
-    public function setContents(array $contents): self
+    public function setContent(string $content): self
     {
-        $this->contents = $contents;
+        $this->content = $content;
 
         return $this;
     }
@@ -132,13 +129,6 @@ class Response
     public function setHistory(array $history): self
     {
         $this->history = $history;
-
-        return $this;
-    }
-
-    public function addHistory(History $history): self
-    {
-        $this->history = [...$this->history, $history];
 
         return $this;
     }

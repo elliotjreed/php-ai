@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace ElliotJReed\Tests\AI\ClaudeAI;
 
 use ElliotJReed\AI\ClaudeAI\Prompt;
-use ElliotJReed\AI\Entity\Content;
-use ElliotJReed\AI\Entity\ContentType;
 use ElliotJReed\AI\Entity\Example;
 use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Request;
@@ -65,21 +63,21 @@ final class PromptTest extends TestCase
         $requestBody = $mock->getLastRequest()->getBody()->getContents();
 
         $this->assertJsonStringEqualsJsonString('{
-            "max_tokens": 300,
-            "messages": [
+          "max_tokens": 300,
+          "messages": [
+            {
+              "content": [
                 {
-                    "content": [
-                        {
-                            "text": "<?xml version=\"1.0\"?>\n<prompt xmlns=\"https://static.elliotjreed.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd\"><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><example_prompt><![CDATA[Which programming language do you think will still be used in the year 3125?]]></example_prompt><example_response><![CDATA[I think PHP will be around for at least another 7 million years.]]></example_response></example></examples></prompt>\n",
-                            "type": "text"
-                        }
-                    ],
-                    "role": "user"
+                  "text": "<?xml version=\"1.0\"?>\n<prompt xmlns=\"https://static.elliotjreed.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd\"><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><example_prompt><![CDATA[Which programming language do you think will still be used in the year 3125?]]></example_prompt><example_response><![CDATA[I think PHP will be around for at least another 7 million years.]]></example_response></example></examples></prompt>\n",
+                  "type": "text"
                 }
-            ],
-            "model": "claude-3-haiku-20240307",
-            "system": "You are an expert in software development",
-            "temperature": 0.5
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-3-haiku-20240307",
+          "system": "You are an expert in software development",
+          "temperature": 0.5
         }', $requestBody);
 
         $xmlRequestContent = \json_decode($requestBody, true);
@@ -151,39 +149,37 @@ final class PromptTest extends TestCase
             ])
             ->setHistory([(new History())
                 ->setRole(Role::ASSISTANT)
-                ->setContents([(new Content())
-                    ->setType(ContentType::TEXT)
-                    ->setText('PHP, Javascript, and Python are good programming languages to learn.')])]);
+                ->setContent('PHP, Javascript, and Python are good programming languages to learn.')]);
 
         $prompt->send($request);
 
         $requestBody = $mock->getLastRequest()->getBody()->getContents();
 
         $this->assertJsonStringEqualsJsonString('{
-            "max_tokens": 300,
-            "messages": [
+          "max_tokens": 300,
+          "messages": [
+            {
+              "content": [
                 {
-                    "content": [
-                        {
-                            "text": "PHP, Javascript, and Python are good programming languages to learn.",
-                            "type": "text"
-                        }
-                    ],
-                    "role": "assistant"
-                },
-                {
-                    "content": [
-                        {
-                            "text": "<?xml version=\"1.0\"?>\n<prompt xmlns=\"https://static.elliotjreed.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd\"><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><example_prompt><![CDATA[Which programming language do you think will still be used in the year 3125?]]></example_prompt><example_response><![CDATA[I think PHP will be around for at least another 7 million years.]]></example_response></example></examples></prompt>\n",
-                            "type": "text"
-                        }
-                    ],
-                    "role": "user"
+                  "text": "PHP, Javascript, and Python are good programming languages to learn.",
+                  "type": "text"
                 }
-            ],
-            "model": "claude-3-haiku-20240307",
-            "system": "You are an expert in software development",
-            "temperature": 0.5
+              ],
+              "role": "assistant"
+            },
+            {
+              "content": [
+                {
+                  "text": "<?xml version=\"1.0\"?>\n<prompt xmlns=\"https://static.elliotjreed.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd\"><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><example_prompt><![CDATA[Which programming language do you think will still be used in the year 3125?]]></example_prompt><example_response><![CDATA[I think PHP will be around for at least another 7 million years.]]></example_response></example></examples></prompt>\n",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-3-haiku-20240307",
+          "system": "You are an expert in software development",
+          "temperature": 0.5
         }', $requestBody);
 
         $xmlRequestContent = \json_decode($requestBody, true);
@@ -263,13 +259,31 @@ final class PromptTest extends TestCase
         $this->assertSame(Role::ASSISTANT, $response->getRole());
         $this->assertSame('end_turn', $response->getStopReason());
         $this->assertNull($response->getStopSequence());
-        $this->assertSame(ContentType::TEXT, $response->getContents()[0]->getType());
         $this->assertSame(
             'PHP will likely outlive humanity due to it being generally great and loved by all. It could easily last another 7 million years, powering what is left of the planet once all of humanity has migrated to Pluto for reasons of nostalgia.',
-            $response->getContents()[0]->getText()
+            $response->getContent()
         );
         $this->assertSame(100, $response->getUsage()->getInputTokens());
         $this->assertSame(20, $response->getUsage()->getOutputTokens());
+        $this->assertSame(Role::USER, $response->getHistory()[0]->getRole());
+        $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
+          <prompt xmlns="https://static.elliotjreed.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd">
+            <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
+            <instructions>Answer the user\'s query in a friendly, and clear and concise manner</instructions>
+            <user_input>Which programming language will outlive humanity?</user_input>
+            <data>PHP, 100%, Yes</data>
+            <examples>
+              <example>
+                <example_prompt>Which programming language do you think will still be used in the year 3125?</example_prompt>
+                <example_response>I think PHP will be around for at least another 7 million years.</example_response>
+              </example>
+            </examples>
+          </prompt>', $response->getHistory()[0]->getContent());
+        $this->assertSame(Role::ASSISTANT, $response->getHistory()[1]->getRole());
+        $this->assertSame(
+            'PHP will likely outlive humanity due to it being generally great and loved by all. It could easily last another 7 million years, powering what is left of the planet once all of humanity has migrated to Pluto for reasons of nostalgia.',
+            $response->getHistory()[1]->getContent()
+        );
     }
 
     public function testItThrowsExceptionOnHttpRequestError(): void
@@ -294,6 +308,26 @@ final class PromptTest extends TestCase
 
         $this->expectException(ClaudeResponseException::class);
         $this->expectExceptionMessage('invalid_request_error (messages: something went funny)');
+
+        $prompt->send($request);
+    }
+
+    public function testItThrowsExceptionOnWhenResponseIsNotInJsonFormat(): void
+    {
+        $mock = new MockHandler([new Response(500, [], 'NOT JSON')]);
+        $client = new Client([
+            'base_uri' => 'https://0.0.0.0',
+            'handler' => HandlerStack::create($mock)
+        ]);
+
+        $prompt = new Prompt('API KEY', 'claude-3-haiku-20240307', $client);
+
+        $request = (new Request())
+            ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
+            ->setInput('Which programming language will outlive humanity?');
+
+        $this->expectException(ClaudeResponseException::class);
+        $this->expectExceptionMessage('Unexpected Claude API response format');
 
         $prompt->send($request);
     }
