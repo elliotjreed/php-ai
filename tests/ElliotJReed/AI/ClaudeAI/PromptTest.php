@@ -46,10 +46,9 @@ final class PromptTest extends TestCase
             'handler' => HandlerStack::create($mock)
         ]);
 
-        $prompt = new Prompt('API KEY', $client);
+        $prompt = new Prompt('API KEY', 'claude-3-haiku-20240307', $client);
 
         $request = (new Request())
-            ->setModel('claude-3-haiku-20240307')
             ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
             ->setRole('You are an expert in software development')
             ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
@@ -137,10 +136,9 @@ final class PromptTest extends TestCase
             'handler' => HandlerStack::create($mock)
         ]);
 
-        $prompt = new Prompt('API KEY', $client);
+        $prompt = new Prompt('API KEY', 'claude-3-haiku-20240307', $client);
 
         $request = (new Request())
-            ->setModel('claude-3-haiku-20240307')
             ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
             ->setRole('You are an expert in software development')
             ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
@@ -242,10 +240,9 @@ final class PromptTest extends TestCase
             'handler' => HandlerStack::create($mock)
         ]);
 
-        $prompt = new Prompt('API KEY', $client);
+        $prompt = new Prompt('API KEY', 'claude-3-haiku-20240307', $client);
 
         $request = (new Request())
-            ->setModel('claude-3-haiku-20240307')
             ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
             ->setRole('You are an expert in software development')
             ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
@@ -289,10 +286,9 @@ final class PromptTest extends TestCase
             'handler' => HandlerStack::create($mock)
         ]);
 
-        $prompt = new Prompt('API KEY', $client);
+        $prompt = new Prompt('API KEY', 'claude-3-haiku-20240307', $client);
 
         $request = (new Request())
-            ->setModel('claude-3-haiku-20240307')
             ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
             ->setInput('Which programming language will outlive humanity?');
 
