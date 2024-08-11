@@ -6,15 +6,15 @@ namespace ElliotJReed\AI\Entity;
 
 class Content
 {
-    private string $type;
+    private ContentType $type;
     private string $text;
 
-    public function getType(): string
+    public function getType(): ContentType
     {
         return $this->type;
     }
 
-    public function setType(string $type): self
+    public function setType(ContentType $type): self
     {
         $this->type = $type;
 

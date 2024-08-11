@@ -8,12 +8,16 @@ class Response
 {
     private string $type;
     private string $id;
-    private string $role;
+    private Role $role;
     private string $model;
     private array $contents = [];
     private string $stopReason;
     private ?string $stopSequence = null;
     private Usage $usage;
+    /**
+     * @var \ElliotJReed\AI\Entity\History[]
+     */
+    private array $history = [];
 
     public function getType(): string
     {
@@ -39,18 +43,12 @@ class Response
         return $this;
     }
 
-    /**
-     * @return "user"|"assistant"
-     */
-    public function getRole(): string
+    public function getRole(): Role
     {
         return $this->role;
     }
 
-    /**
-     * @param "user"|"assistant" $role
-     */
-    public function setRole(string $role): self
+    public function setRole(Role $role): self
     {
         $this->role = $role;
 
@@ -116,6 +114,31 @@ class Response
     public function setUsage(Usage $usage): self
     {
         $this->usage = $usage;
+
+        return $this;
+    }
+
+    /**
+     * @return \ElliotJReed\AI\Entity\History[]
+     */
+    public function getHistory(): array
+    {
+        return $this->history;
+    }
+
+    /**
+     * @param \ElliotJReed\AI\Entity\History[] $history
+     */
+    public function setHistory(array $history): self
+    {
+        $this->history = $history;
+
+        return $this;
+    }
+
+    public function addHistory(History $history): self
+    {
+        $this->history = [...$this->history, $history];
 
         return $this;
     }

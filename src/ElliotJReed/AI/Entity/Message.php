@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ElliotJReed\AI\Entity;
 
-class Request
+class Message
 {
     private ?string $role = null;
     private float $temperature = 1.0;
@@ -14,10 +14,18 @@ class Request
     private ?string $input = null;
     private ?string $data = null;
     private array $examples = [];
-    /**
-     * @var \ElliotJReed\AI\Entity\History[]
-     */
-    private array $history = [];
+
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    public function setModel(?string $model): self
+    {
+        $this->model = $model;
+
+        return $this;
+    }
 
     public function getRole(): ?string
     {
@@ -117,24 +125,6 @@ class Request
     public function setExamples(array $example): self
     {
         $this->examples = $example;
-
-        return $this;
-    }
-
-    /**
-     * @return \ElliotJReed\AI\Entity\History[]
-     */
-    public function getHistory(): array
-    {
-        return $this->history;
-    }
-
-    /**
-     * @param \ElliotJReed\AI\Entity\History[] $history
-     */
-    public function setHistory(array $history): self
-    {
-        $this->history = $history;
 
         return $this;
     }

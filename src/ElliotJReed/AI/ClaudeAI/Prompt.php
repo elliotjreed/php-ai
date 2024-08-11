@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace ElliotJReed\AI\ClaudeAI;
 
 use ElliotJReed\AI\Entity\Content;
+use ElliotJReed\AI\Entity\ContentType;
+use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Entity\Response;
+use ElliotJReed\AI\Entity\Role;
 use ElliotJReed\AI\Entity\Usage;
 use ElliotJReed\AI\Exception\ClaudeHttpClientException;
 use ElliotJReed\AI\Exception\ClaudeRequestException;
@@ -23,16 +26,28 @@ class Prompt extends \ElliotJReed\AI\Prompt
 
     public function send(Request $request): Response
     {
-        $content = $this->buildRequest($request);
+        $requestContent = $this->buildRequest($request);
+
+        $response = (new Response())
+            ->setHistory([
+                ...$request->getHistory(),
+                (new History())
+                    ->setRole(Role::USER)
+                    ->setContents([(new Content())
+                        ->setType($requestContent->getType())
+                        ->setText($requestContent->getText())])
+            ]);
+
+        $messageHistory = [];
+        foreach ($response->getHistory() as $history) {
+            $messageHistory[] = $history->toArray();
+        }
 
         $requestBody = [
-            'model' => $request->getModel(),
+            'model' => $this->model,
             'max_tokens' => $request->getMaximumTokens(),
             'temperature' => $request->getTemperature(),
-            'messages' => [[
-                'role' => 'user',
-                'content' => $content
-            ]]
+            'messages' => $messageHistory
         ];
 
         if (null !== $request->getRole() && '' !== \trim($request->getRole())) {
@@ -45,24 +60,27 @@ class Prompt extends \ElliotJReed\AI\Prompt
             throw new ClaudeResponseException($decoded['error']['type'] . ' (' . $decoded['error']['message'] . ')');
         }
 
-        $contents = [];
+        $responseContents = [];
         foreach ($decoded['content'] as $item) {
-            $contents[] = (new Content())
-                ->setType($item['type'])
+            $responseContents[] = (new Content())
+                ->setType(ContentType::from($item['type']))
                 ->setText($item['text']);
         }
 
-        return (new Response())
+        return $response
             ->setId($decoded['id'])
             ->setType($decoded['type'])
-            ->setRole($decoded['role'])
+            ->setRole(Role::from($decoded['role']))
             ->setModel($decoded['model'])
-            ->setContents($contents)
+            ->setContents($responseContents)
             ->setStopReason($decoded['stop_reason'])
             ->setStopSequence($decoded['stop_sequence'])
             ->setUsage((new Usage())
                 ->setInputTokens($decoded['usage']['input_tokens'])
-                ->setOutputTokens($decoded['usage']['output_tokens']));
+                ->setOutputTokens($decoded['usage']['output_tokens']))
+            ->addHistory((new History())
+                ->setRole(Role::ASSISTANT)
+                ->setContents($responseContents));
     }
 
     protected function request(array $body): ResponseInterface

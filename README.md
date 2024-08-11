@@ -1,18 +1,43 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
-A library for interacting with ChatGPT and Claude AI.
+A library for interacting with Claude AI (ChatGPT coming soon!).
+
+At present only text requests and responses are supported. Images and other files will come in time.
 
 # Usage
+
+For a really simple request and response:
 
 ```php
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$prompt = new ElliotJReed\AI\ClaudeAI\Prompt('API KEY', $client);
+$prompt = new ElliotJReed\AI\ClaudeAI\Prompt('API KEY', 'claude-3-haiku-20240307', $client);
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setModel('claude-3-haiku-20240307')
+    ->setInput('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
+
+foreach ($response->getContents() as $content) {
+    echo 'Response from AI: ' . $content->getText() . \PHP_EOL;
+}
+```
+
+You can provide a role too, as well as additional context, data, examples, setting the temperature (between 0 and 1, basically how "creative" you want the AI to be), and the maximum tokens to use (recommended if the user input is from a indirect source, for example an online chatbot):
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\ClaudeAI\Prompt('API KEY', 'claude-3-haiku-20240307', $client);
+
+$request = (new ElliotJReed\AI\Entity\Request())
     ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
     ->setRole('You are an expert in software development')
     ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
@@ -31,6 +56,44 @@ echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
 echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
 
 foreach ($response->getContents() as $content) {
+    echo 'Response from AI: ' . $content->getText() . \PHP_EOL;
+}
+```
+
+If you want to keep a conversation going (like you would on ChatGPT or Claude's website or app), you can pass through the history from the previous response to a new request:
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\ClaudeAI\Prompt('API KEY', 'claude-3-haiku-20240307', $client);
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setContext('The user will ask various ethical questions posited through an online chat interface.')
+    ->setRole('You are a philosopher and ethicist who favours utilitarian methodology when answering ethical questions.')
+    ->setInstructions('Answer ethical questions using British English only, referencing the works of Jeremy Bentham, John Stuart Mill, and Peter Singer.')
+    ->setInput('Should we all be vegan?')
+    ->setTemperature(0.8)
+    ->setMaximumTokens(300);
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL . \PHP_EOL;
+
+foreach ($response->getContents() as $content) {
+    echo 'Response from AI: ' . $content->getText() . \PHP_EOL;
+}
+
+$secondResponse = $prompt->send($request
+    ->setInput('Elaborate on your response, providing 3 bullet points for arguing in favour of veganism, and 3 bullet points arguing against.')
+    ->setHistory($response->getHistory()));
+
+echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL . \PHP_EOL;
+
+foreach ($secondResponse->getContents() as $content) {
     echo 'Response from AI: ' . $content->getText() . \PHP_EOL;
 }
 ```

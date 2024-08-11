@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ElliotJReed\AI;
 
 use DOMDocument;
+use ElliotJReed\AI\Entity\Content;
+use ElliotJReed\AI\Entity\ContentType;
 use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Exception\AIRequestException;
 use GuzzleHttp\Client;
@@ -15,11 +17,12 @@ abstract class Prompt
 {
     public function __construct(
         protected readonly string $apiKey,
+        protected readonly string $model,
         protected readonly ClientInterface $client = new Client()
     ) {
     }
 
-    protected function buildRequest(Request $request): string
+    protected function buildRequest(Request $request): Content
     {
         $xml = new SimpleXMLElement(
             '<prompt xmlns="https://static.elliotjreed.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd" />',
@@ -59,7 +62,7 @@ abstract class Prompt
             throw new AIRequestException('Underlying XML provided to API provider during prompt was invalid.');
         }
 
-        return $content;
+        return (new Content())->setType(ContentType::TEXT)->setText($content);
     }
 
     private function wrapInput(string $input): string
