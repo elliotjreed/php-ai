@@ -69,7 +69,7 @@ $request = (new ElliotJReed\AI\Entity\Request())
 $response = $prompt->send($request);
 
 echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
@@ -98,7 +98,7 @@ $request = (new ElliotJReed\AI\Entity\Request())
 $response = $prompt->send($request);
 
 echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
@@ -151,7 +151,7 @@ $request = (new ElliotJReed\AI\Entity\Request())
 $response = $prompt->send($request);
 
 echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
@@ -180,7 +180,7 @@ $request = (new ElliotJReed\AI\Entity\Request())
 $response = $prompt->send($request);
 
 echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
@@ -279,7 +279,7 @@ composer phpcs
 
 ### Running everything
 
-All of the tests can be run by executing:
+All the tests can be run by executing:
 
 ```bash
 composer test
