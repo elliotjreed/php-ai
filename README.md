@@ -6,6 +6,12 @@ At present only text requests and responses are supported.
 
 # Usage
 
+Install via [Composer](https://getcomposer.org/):
+
+```shell
+composer require elliotjreed/ai
+```
+
 There are two classes, one for Claude AI, and one for ChatGPT.
 
 ```php
