@@ -15,7 +15,7 @@ class Request
     private ?string $data = null;
     private array $examples = [];
     /**
-     * @var \ElliotJReed\AI\Entity\History[]
+     * @var History[]
      */
     private array $history = [];
 
@@ -104,7 +104,7 @@ class Request
     }
 
     /**
-     * @return \ElliotJReed\AI\Entity\Example[]
+     * @return Example[]
      */
     public function getExamples(): array
     {
@@ -112,7 +112,7 @@ class Request
     }
 
     /**
-     * @param \ElliotJReed\AI\Entity\Example[] $example
+     * @param Example[] $example
      */
     public function setExamples(array $example): self
     {
@@ -122,7 +122,7 @@ class Request
     }
 
     /**
-     * @return \ElliotJReed\AI\Entity\History[]
+     * @return History[]
      */
     public function getHistory(): array
     {
@@ -130,7 +130,7 @@ class Request
     }
 
     /**
-     * @param \ElliotJReed\AI\Entity\History[] $history
+     * @param History[] $history
      */
     public function setHistory(array $history): self
     {

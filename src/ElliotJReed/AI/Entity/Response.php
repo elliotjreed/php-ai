@@ -15,7 +15,7 @@ class Response
     private ?string $stopSequence = null;
     private Usage $usage;
     /**
-     * @var \ElliotJReed\AI\Entity\History[]
+     * @var History[]
      */
     private array $history = [];
 
@@ -116,7 +116,7 @@ class Response
     }
 
     /**
-     * @return \ElliotJReed\AI\Entity\History[]
+     * @return History[]
      */
     public function getHistory(): array
     {
@@ -124,7 +124,7 @@ class Response
     }
 
     /**
-     * @param \ElliotJReed\AI\Entity\History[] $history
+     * @param History[] $history
      */
     public function setHistory(array $history): self
     {
