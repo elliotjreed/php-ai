@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ElliotJReed\Tests\AI\ChatGPT;
 
 use ElliotJReed\AI\ChatGPT\Prompt;
-use ElliotJReed\AI\Entity\Example;
 use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Entity\Role;
@@ -53,14 +52,13 @@ final class PromptTest extends TestCase
 
         $request = (new Request())
             ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-            ->setRole('You are an expert in software development')
-            ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
-            ->setInput('Which programming language will outlive humanity?')
+            ->setSystemPrompt('You are helping software developers of varying levels of experience')
+            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+            ->setUserInput('Which programming language will outlive humanity?')
             ->setTemperature(0.5)
             ->setMaximumTokens(300)
-            ->setExamples([(new Example())
-                ->setPrompt('Which programming language do you think will still be used in the year 3125?')
-                ->setResponse('I think PHP will be around for at least another 7 million years.')
+            ->setExamples([
+                'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
             ]);
 
         $prompt->send($request);
@@ -73,7 +71,16 @@ final class PromptTest extends TestCase
             {
               "content": [
                 {
-                  "text": "<?xml version=\"1.0\"?>\n<prompt xmlns=\"https://static.elliotjreed.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd\"><role><![CDATA[You are an expert in software development]]></role><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><example_prompt><![CDATA[Which programming language do you think will still be used in the year 3125?]]></example_prompt><example_response><![CDATA[I think PHP will be around for at least another 7 million years.]]></example_response></example></examples></prompt>\n",
+                  "text": "You are helping software developers of varying levels of experience",
+                  "type": "text"
+                }
+              ],
+              "role": "developer"
+            },
+            {
+              "content": [
+                {
+                  "text": "<prompt><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><![CDATA[Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.]]></example></examples></prompt>",
                   "type": "text"
                 }
               ],
@@ -86,19 +93,15 @@ final class PromptTest extends TestCase
 
         $xmlRequestContent = \json_decode($requestBody, true);
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
-          <prompt xmlns="https://static.elliotjreed.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd">
-            <role><![CDATA[You are an expert in software development]]></role>
+          <prompt>
             <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
-            <instructions>Answer the user\'s query in a friendly, and clear and concise manner</instructions>
+            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
             <user_input>Which programming language will outlive humanity?</user_input>
             <examples>
-              <example>
-                <example_prompt>Which programming language do you think will still be used in the year 3125?</example_prompt>
-                <example_response>I think PHP will be around for at least another 7 million years.</example_response>
-              </example>
+              <example>Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.</example>
             </examples>
           </prompt>
-        ', $xmlRequestContent['messages'][0]['content'][0]['text']);
+        ', $xmlRequestContent['messages'][1]['content'][0]['text']);
     }
 
     public function testItSendsRequestWithMessageHistoryInXmlFormat(): void
@@ -136,18 +139,22 @@ final class PromptTest extends TestCase
 
         $request = (new Request())
             ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-            ->setRole('You are an expert in software development')
-            ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
-            ->setInput('Which programming language will outlive humanity?')
+            ->setSystemPrompt('You are helping software developers of varying levels of experience')
+            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+            ->setUserInput('Which programming language will outlive humanity?')
             ->setTemperature(0.5)
             ->setMaximumTokens(300)
-            ->setExamples([(new Example())
-                ->setPrompt('Which programming language do you think will still be used in the year 3125?')
-                ->setResponse('I think PHP will be around for at least another 7 million years.')
+            ->setExamples([
+                'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
             ])
-            ->setHistory([(new History())
+            ->setHistory([
+                (new History())
+                    ->setRole(Role::USER)
+                    ->setContent('What are good programming languages to learn?'),
+                (new History())
                 ->setRole(Role::ASSISTANT)
-                ->setContent('PHP, Javascript, and Python are good programming languages to learn.')]);
+                ->setContent('PHP, Javascript, and Python are good programming languages to learn.')
+            ]);
 
         $prompt->send($request);
 
@@ -156,6 +163,24 @@ final class PromptTest extends TestCase
         $this->assertJsonStringEqualsJsonString('{
           "max_tokens": 300,
           "messages": [
+            {
+              "content": [
+                {
+                  "text": "You are helping software developers of varying levels of experience",
+                  "type": "text"
+                }
+              ],
+              "role": "developer"
+            },
+            {
+              "content": [
+                {
+                  "text": "What are good programming languages to learn?",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            },
             {
               "content": [
                 {
@@ -168,7 +193,7 @@ final class PromptTest extends TestCase
             {
               "content": [
                 {
-                  "text": "<?xml version=\"1.0\"?>\n<prompt xmlns=\"https://static.elliotjreed.com\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd\"><role><![CDATA[You are an expert in software development]]></role><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><example_prompt><![CDATA[Which programming language do you think will still be used in the year 3125?]]></example_prompt><example_response><![CDATA[I think PHP will be around for at least another 7 million years.]]></example_response></example></examples></prompt>\n",
+                  "text": "<prompt><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><![CDATA[Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.]]></example></examples></prompt>",
                   "type": "text"
                 }
               ],
@@ -181,19 +206,15 @@ final class PromptTest extends TestCase
 
         $xmlRequestContent = \json_decode($requestBody, true);
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
-            <prompt xmlns="https://static.elliotjreed.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd">
-              <role>You are an expert in software development</role>
-              <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
-              <instructions>Answer the user\'s query in a friendly, and clear and concise manner</instructions>
-              <user_input>Which programming language will outlive humanity?</user_input>
-              <examples>
-                <example>
-                  <example_prompt>Which programming language do you think will still be used in the year 3125?</example_prompt>
-                  <example_response>I think PHP will be around for at least another 7 million years.</example_response>
-                </example>
-              </examples>
-            </prompt>
-        ', $xmlRequestContent['messages'][1]['content'][0]['text']);
+          <prompt>
+            <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
+            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
+            <user_input>Which programming language will outlive humanity?</user_input>
+            <examples>
+              <example>Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.</example>
+            </examples>
+          </prompt>
+        ', $xmlRequestContent['messages'][3]['content'][0]['text']);
     }
 
     public function testItReturnsResponse(): void
@@ -231,14 +252,13 @@ final class PromptTest extends TestCase
 
         $request = (new Request())
             ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-            ->setRole('You are an expert in software development')
-            ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
-            ->setInput('Which programming language will outlive humanity?')
+            ->setSystemPrompt('You are helping software developers of varying levels of experience')
+            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+            ->setUserInput('Which programming language will outlive humanity?')
             ->setTemperature(0.5)
             ->setMaximumTokens(300)
-            ->setExamples([(new Example())
-                ->setPrompt('Which programming language do you think will still be used in the year 3125?')
-                ->setResponse('I think PHP will be around for at least another 7 million years.')
+            ->setExamples([
+                'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
             ])
             ->setData('PHP, 100%, Yes');
 
@@ -258,35 +278,16 @@ final class PromptTest extends TestCase
         $this->assertSame(29, $response->getUsage()->getOutputTokens());
         $this->assertSame(Role::USER, $response->getHistory()[0]->getRole());
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
-          <prompt
-              xmlns="https://static.elliotjreed.com"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd">
-              <role>
-                  <![CDATA[You are an expert in software development]]>
-              </role>
-              <context>
-                  <![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]>
-              </context>
-              <instructions>
-                  <![CDATA[Answer the user\'s query in a friendly, and clear and concise manner]]>
-              </instructions>
-              <user_input>
-                  <![CDATA[Which programming language will outlive humanity?]]>
-              </user_input>
-              <data>
-                  <![CDATA[PHP, 100%, Yes]]>
-              </data>
-              <examples>
-                  <example>
-                      <example_prompt>
-                          <![CDATA[Which programming language do you think will still be used in the year 3125?]]>
-                      </example_prompt>
-                      <example_response>
-                          <![CDATA[I think PHP will be around for at least another 7 million years.]]>
-                      </example_response>
-                  </example>
-              </examples>
-          </prompt>', $response->getHistory()[0]->getContent());
+          <prompt>
+            <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
+            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
+            <user_input>Which programming language will outlive humanity?</user_input>
+            <data>PHP, 100%, Yes</data>
+            <examples>
+              <example>Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.</example>
+            </examples>
+          </prompt>
+        ', $response->getHistory()[0]->getContent());
         $this->assertSame(Role::ASSISTANT, $response->getHistory()[1]->getRole());
         $this->assertSame(
             'PHP will likely outlive humanity due to it being generally great and loved by all. It could easily last another 7 million years, powering what is left of the planet once all of humanity has migrated to Pluto for reasons of nostalgia.',
@@ -312,8 +313,8 @@ final class PromptTest extends TestCase
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
         $request = (new Request())
-            ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
-            ->setInput('Which programming language will outlive humanity?');
+            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+            ->setUserInput('Which programming language will outlive humanity?');
 
         $this->expectException(ChatGPTResponseException::class);
         $this->expectExceptionMessage('insufficient_quota (You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.)');
@@ -332,8 +333,8 @@ final class PromptTest extends TestCase
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
         $request = (new Request())
-            ->setInstructions('Answer the user\'s query in a friendly, and clear and concise manner')
-            ->setInput('Which programming language will outlive humanity?');
+            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+            ->setUserInput('Which programming language will outlive humanity?');
 
         $this->expectException(ChatGPTResponseException::class);
         $this->expectExceptionMessage('Unexpected ChatGPT API response format');

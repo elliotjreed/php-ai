@@ -2,7 +2,11 @@
   "name": "elliotjreed/ai",
   "description": "A library for interacting with ChatGPT and Claude AI",
   "keywords": [
-    "elliotjreed",
+    "claude",
+    "anthropic",
+    "openai",
+    "chatgpt",
+    "llm",
     "ai"
   ],
   "license": "MIT",
@@ -27,7 +31,7 @@
     }
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "ext-dom": "*",
     "ext-libxml": "*",
     "ext-simplexml": "*",
@@ -35,9 +39,9 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "*",
-    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-phpunit": "^2.0",
-    "phpunit/phpunit": "^11.5",
+    "phpunit/phpunit": "^12.0",
     "roave/security-advisories": "dev-master",
     "squizlabs/php_codesniffer": "*"
   },

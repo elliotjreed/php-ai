@@ -1,10 +1,11 @@
 .PHONY: all
 all: vendor
 
-vendor: composer.json composer.lock
+vendor: composer.json
 	composer install
 
-.PHONY: test phpcs phpunit composer-validate composer-outdated
+install: composer.json
+	composer install
 
 test: phpunit phpcs composer-validate composer-outdated
 
@@ -25,4 +26,4 @@ composer-outdated: vendor
 
 .PHONY: clean
 clean:
-	rm -rf build/ vendor/
+	rm -rf coverage/ vendor/ .phpunit.cache .php-cs-fixer.cache

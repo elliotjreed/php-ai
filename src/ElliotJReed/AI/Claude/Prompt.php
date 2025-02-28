@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ElliotJReed\AI\ClaudeAI;
+namespace ElliotJReed\AI\Claude;
 
 use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Response;
@@ -81,7 +81,7 @@ class Prompt extends \ElliotJReed\AI\Prompt
                 ->setInputTokens($decoded['usage']['input_tokens'])
                 ->setOutputTokens($decoded['usage']['output_tokens']))
             ->setHistory([...$history, (new History())
-                ->setRole(Role::ASSISTANT)
+                ->setRole(Role::from($decoded['role']))
                 ->setContent($decoded['content'][0]['text'])]);
     }
 }

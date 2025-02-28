@@ -79,11 +79,19 @@ class Response
         return $this;
     }
 
+    /**
+     * @return string The reason that the AI assistant stopped output (ie. the model reached a natural stopping point, the maximum tokens set was reached, the stop sequence was generated)
+     */
     public function getStopReason(): string
     {
         return $this->stopReason;
     }
 
+    /**
+     * @param string $stopReason The reason that the AI assistant stopped output (ie. the model reached a natural stopping point, the maximum tokens set was reached, the stop sequence was generated)
+     *
+     * @return $this
+     */
     public function setStopReason(string $stopReason): self
     {
         $this->stopReason = $stopReason;
@@ -91,11 +99,19 @@ class Response
         return $this;
     }
 
+    /**
+     * @return string|null Which custom stop sequence was generated, if any
+     */
     public function getStopSequence(): ?string
     {
         return $this->stopSequence;
     }
 
+    /**
+     * @param string|null $stopSequence Which custom stop sequence was generated, if any
+     *
+     * @return $this
+     */
     public function setStopSequence(?string $stopSequence): self
     {
         $this->stopSequence = $stopSequence;
@@ -103,11 +119,19 @@ class Response
         return $this;
     }
 
+    /**
+     * @return Usage Billing and rate-limit usage
+     */
     public function getUsage(): Usage
     {
         return $this->usage;
     }
 
+    /**
+     * @param Usage $usage Billing and rate-limit usage
+     *
+     * @return $this
+     */
     public function setUsage(Usage $usage): self
     {
         $this->usage = $usage;
@@ -116,7 +140,7 @@ class Response
     }
 
     /**
-     * @return History[]
+     * @return History[] The chat history between the AI assistant and the user
      */
     public function getHistory(): array
     {
@@ -124,7 +148,7 @@ class Response
     }
 
     /**
-     * @param History[] $history
+     * @param History[] $history The chat history between the AI assistant and the user
      */
     public function setHistory(array $history): self
     {

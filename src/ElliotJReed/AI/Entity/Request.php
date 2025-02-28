@@ -6,36 +6,55 @@ namespace ElliotJReed\AI\Entity;
 
 class Request
 {
-    private ?string $role = null;
+    private ?string $systemPrompt = null;
     private float $temperature = 1.0;
-    private int $maximumTokens = 2000;
+    private int $maximumTokens = 10000;
     private ?string $context = null;
     private ?string $instructions = null;
-    private ?string $input = null;
+    private ?string $userInput = null;
     private ?string $data = null;
+    /**
+     * @var string[]
+     */
     private array $examples = [];
     /**
      * @var History[]
      */
     private array $history = [];
 
-    public function getRole(): ?string
+    /**
+     * @return string|null Instructions to the model that are prioritised ahead of user messages
+     */
+    public function getSystemPrompt(): ?string
     {
-        return $this->role;
+        return $this->systemPrompt;
     }
 
-    public function setRole(?string $role): self
+    /**
+     * @param string|null $systemPrompt Instructions to the model that are prioritised ahead of user messages
+     *
+     * @return $this
+     */
+    public function setSystemPrompt(?string $systemPrompt): self
     {
-        $this->role = $role;
+        $this->systemPrompt = $systemPrompt;
 
         return $this;
     }
 
+    /**
+     * @return float Amount of randomness injected into the response. Defaults to 1.0. Ranges from 0.0 to 1.0. Use temperature closer to 0.0 for analytical / multiple choice, and closer to 1.0 for creative and generative tasks. Note that even with temperature of 0.0, the results will not be fully deterministic.
+     */
     public function getTemperature(): float
     {
         return $this->temperature;
     }
 
+    /**
+     * @param float $temperature Amount of randomness injected into the response. Defaults to 1.0. Ranges from 0.0 to 1.0. Use temperature closer to 0.0 for analytical / multiple choice, and closer to 1.0 for creative and generative tasks. Note that even with temperature of 0.0, the results will not be fully deterministic.
+     *
+     * @return $this
+     */
     public function setTemperature(float $temperature): self
     {
         $this->temperature = $temperature;
@@ -43,11 +62,19 @@ class Request
         return $this;
     }
 
+    /**
+     * @return int The maximum number of tokens to generate before stopping. Note that the models may stop before reaching this maximum. This parameter only specifies the absolute maximum number of tokens to generate.
+     */
     public function getMaximumTokens(): int
     {
         return $this->maximumTokens;
     }
 
+    /**
+     * @param int $maximumTokens The maximum number of tokens to generate before stopping. Note that the models may stop before reaching this maximum. This parameter only specifies the absolute maximum number of tokens to generate.
+     *
+     * @return $this
+     */
     public function setMaximumTokens(int $maximumTokens): self
     {
         $this->maximumTokens = $maximumTokens;
@@ -55,11 +82,19 @@ class Request
         return $this;
     }
 
+    /**
+     * @return string|null Background information sent in the user prompt
+     */
     public function getContext(): ?string
     {
         return $this->context;
     }
 
+    /**
+     * @param string|null $context Background information sent in the user prompt
+     *
+     * @return $this
+     */
     public function setContext(?string $context): self
     {
         $this->context = $context;
@@ -67,11 +102,19 @@ class Request
         return $this;
     }
 
+    /**
+     * @return string|null Instructions sent in the user prompt (higher level trusted instructions should be set in the system prompt: setSystemPrompt())
+     */
     public function getInstructions(): ?string
     {
         return $this->instructions;
     }
 
+    /**
+     * @param string|null $instructions Instructions sent in the user prompt (higher level trusted instructions should be set in the system prompt: setSystemPrompt())
+     *
+     * @return $this
+     */
     public function setInstructions(?string $instructions): self
     {
         $this->instructions = $instructions;
@@ -79,23 +122,39 @@ class Request
         return $this;
     }
 
-    public function getInput(): ?string
+    /**
+     * @return string|null User input sent in the user prompt (this could be untrusted input, eg. from a web form or live chat)
+     */
+    public function getUserInput(): ?string
     {
-        return $this->input;
+        return $this->userInput;
     }
 
-    public function setInput(?string $input): self
+    /**
+     * @param string|null $userInput User input sent in the user prompt (this could be untrusted input, eg. from a web form or live chat)
+     *
+     * @return $this
+     */
+    public function setUserInput(?string $userInput): self
     {
-        $this->input = $input;
+        $this->userInput = $userInput;
 
         return $this;
     }
 
+    /**
+     * @return string|null Data sent in the user prompt (eg. CSV contents)
+     */
     public function getData(): ?string
     {
         return $this->data;
     }
 
+    /**
+     * @param string|null $data Data sent in the user prompt (eg. CSV contents)
+     *
+     * @return $this
+     */
     public function setData(?string $data): self
     {
         $this->data = $data;
@@ -104,7 +163,7 @@ class Request
     }
 
     /**
-     * @return Example[]
+     * @return string[] Examples sent in the user prompt (eg. existing FAQs for a chat bot)
      */
     public function getExamples(): array
     {
@@ -112,7 +171,7 @@ class Request
     }
 
     /**
-     * @param Example[] $example
+     * @param string[] $example Examples sent in the user prompt (eg. existing FAQs for a chat bot)
      */
     public function setExamples(array $example): self
     {
@@ -122,7 +181,7 @@ class Request
     }
 
     /**
-     * @return History[]
+     * @return History[] The chat history between the AI assistant and the user
      */
     public function getHistory(): array
     {
@@ -130,7 +189,7 @@ class Request
     }
 
     /**
-     * @param History[] $history
+     * @param History[] $history The chat history between the AI assistant and the user
      */
     public function setHistory(array $history): self
     {

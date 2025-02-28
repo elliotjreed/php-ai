@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace ElliotJReed\AI;
 
-use DOMDocument;
 use ElliotJReed\AI\ChatGPT\Prompt as ChatGPTPrompt;
-use ElliotJReed\AI\ClaudeAI\Prompt as ClaudeAIPrompt;
+use ElliotJReed\AI\Claude\Prompt as ClaudeAIPrompt;
 use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Entity\Response;
 use ElliotJReed\AI\Entity\Role;
-use ElliotJReed\AI\Exception\AIRequestException;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use SimpleXMLElement;
@@ -27,27 +25,37 @@ abstract class Prompt
 
     public function send(Request $request): Response
     {
-        $history = [
-            ...$request->getHistory(),
-            (new History())
-                ->setRole(Role::USER)
-                ->setContent($this->buildRequest($request))
-        ];
+        $requestHistory = [];
+        if ($this instanceof ChatGPTPrompt && null !== $request->getSystemPrompt() && '' !== \trim($request->getSystemPrompt())) {
+            $requestHistory[] = (new History())
+                ->setRole(Role::DEVELOPER)
+                ->setContent($request->getSystemPrompt())
+                ->toArray();
+        }
 
-        $messageHistory = [];
-        foreach ($history as $responseHistory) {
-            $messageHistory[] = $responseHistory->toArray();
+        /** @var History[] $history */
+        $history = [];
+        foreach ($request->getHistory() as $historyItem) {
+            $history[] = $historyItem;
+        }
+
+        $history[] = (new History())
+            ->setRole(Role::USER)
+            ->setContent($this->buildRequest($request));
+
+        foreach ($history as $historyItem) {
+            $requestHistory[] = $historyItem->toArray();
         }
 
         $requestBody = [
             'model' => $this->model,
             'max_tokens' => $request->getMaximumTokens(),
             'temperature' => $request->getTemperature(),
-            'messages' => $messageHistory
+            'messages' => $requestHistory
         ];
 
-        if ($this instanceof ClaudeAIPrompt && null !== $request->getRole() && '' !== \trim($request->getRole())) {
-            $requestBody['system'] = $request->getRole();
+        if ($this instanceof ClaudeAIPrompt && null !== $request->getSystemPrompt() && '' !== \trim($request->getSystemPrompt())) {
+            $requestBody['system'] = $request->getSystemPrompt();
         }
 
         return $this->getResponse($requestBody, $history);
@@ -56,12 +64,8 @@ abstract class Prompt
     protected function buildRequest(Request $request): string
     {
         $xml = new SimpleXMLElement(
-            '<prompt xmlns="https://static.elliotjreed.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://static.elliotjreed.com https://static.elliotjreed.com/prompt.xsd" />',
+            '<prompt />',
         );
-
-        if ($this instanceof ChatGPTPrompt && null !== $request->getRole() && '' !== \trim($request->getRole())) {
-            $xml->addChild('role', $this->wrapInput($request->getRole()));
-        }
 
         if (null !== $request->getContext() && '' !== \trim($request->getContext())) {
             $xml->addChild('context', $this->wrapInput($request->getContext()));
@@ -71,8 +75,8 @@ abstract class Prompt
             $xml->addChild('instructions', $this->wrapInput($request->getInstructions()));
         }
 
-        if (null !== $request->getInput() && '' !== \trim($request->getInput())) {
-            $xml->addChild('user_input', $this->wrapInput($request->getInput()));
+        if (null !== $request->getUserInput() && '' !== \trim($request->getUserInput())) {
+            $xml->addChild('user_input', $this->wrapInput($request->getUserInput()));
         }
 
         if (null !== $request->getData() && '' !== \trim($request->getData())) {
@@ -82,22 +86,22 @@ abstract class Prompt
         if ([] !== $request->getExamples()) {
             $examplesOutput = $xml->addChild('examples');
             foreach ($request->getExamples() as $example) {
-                $exampleOutput = $examplesOutput->addChild('example');
-                $exampleOutput->addChild('example_prompt', $this->wrapInput($example->getPrompt()));
-                $exampleOutput->addChild('example_response', $this->wrapInput($example->getResponse()));
+                $examplesOutput->addChild('example', $this->wrapInput($example));
             }
         }
 
-        $content = $this->preserveXmlCdata($xml->asXML());
+        return \trim($this->trimXmlDeclaration($this->preserveXmlCdata($xml->asXML())));
+    }
 
-        \libxml_use_internal_errors(true);
-        $domDocument = new DOMDocument();
-        $domDocument->loadXML($content, \LIBXML_NOWARNING | \LIBXML_NOERROR);
-        if (!$domDocument->schemaValidate(__DIR__ . '/../../../prompt-schema.xsd', \LIBXML_NOWARNING | \LIBXML_NOERROR)) {
-            throw new AIRequestException('Underlying XML provided to API provider during prompt was invalid.');
+    private function trimXmlDeclaration(string $string): string
+    {
+        $xmlDeclaration = '<?xml version="1.0"?>' . "\n";
+
+        if (\str_starts_with($string, $xmlDeclaration)) {
+            return \substr($string, \strlen($xmlDeclaration));
         }
 
-        return $content;
+        return $string;
     }
 
     private function wrapInput(string $input): string
@@ -108,35 +112,27 @@ abstract class Prompt
     private function preserveXmlCdata(string $input): string
     {
         return \str_replace([
-            '<role>&lt;![CDATA[',
             '<context>&lt;![CDATA[',
             '<instructions>&lt;![CDATA[',
             '<user_input>&lt;![CDATA[',
+            '<example>&lt;![CDATA[',
             '<data>&lt;![CDATA[',
-            '<example_prompt>&lt;![CDATA[',
-            '<example_response>&lt;![CDATA[',
-            ']]&gt;</role>',
             ']]&gt;</context>',
             ']]&gt;</instructions>',
             ']]&gt;</user_input>',
-            ']]&gt;</data>',
-            ']]&gt;</example_prompt>',
-            ']]&gt;</example_response>'
+            ']]&gt;</example>',
+            ']]&gt;</data>'
         ], [
-            '<role><![CDATA[',
             '<context><![CDATA[',
             '<instructions><![CDATA[',
             '<user_input><![CDATA[',
+            '<example><![CDATA[',
             '<data><![CDATA[',
-            '<example_prompt><![CDATA[',
-            '<example_response><![CDATA[',
-            ']]></role>',
             ']]></context>',
             ']]></instructions>',
             ']]></user_input>',
-            ']]></data>',
-            ']]></example_prompt>',
-            ']]></example_response>'
+            ']]></example>',
+            ']]></data>'
         ], $input);
     }
 

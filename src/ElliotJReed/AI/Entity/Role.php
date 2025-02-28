@@ -9,4 +9,5 @@ enum Role: string
     case USER = 'user';
     case ASSISTANT = 'assistant';
     case SYSTEM = 'system';
+    case DEVELOPER = 'developer';
 }
