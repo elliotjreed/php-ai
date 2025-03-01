@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ElliotJReed\AI\ChatGPT;
 
+use ElliotJReed\AI\Entity\Content;
+use ElliotJReed\AI\Entity\ContentType;
 use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Response;
 use ElliotJReed\AI\Entity\Role;
@@ -79,6 +81,9 @@ class Prompt extends \ElliotJReed\AI\Prompt
                 ->setOutputTokens($decoded['usage']['completion_tokens']))
             ->setHistory([...$history, (new History())
                 ->setRole(Role::from($decoded['choices'][0]['message']['role']))
-                ->setContent($decoded['choices'][0]['message']['content'])]);
+                ->setContents([
+                    (new Content())->setType(ContentType::TEXT)->setText($decoded['choices'][0]['message']['content'])
+                ])
+            ]);
     }
 }

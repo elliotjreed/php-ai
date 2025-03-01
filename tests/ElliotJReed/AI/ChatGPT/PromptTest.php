@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace ElliotJReed\Tests\AI\ChatGPT;
 
 use ElliotJReed\AI\ChatGPT\Prompt;
+use ElliotJReed\AI\Entity\Content;
+use ElliotJReed\AI\Entity\ContentType;
 use ElliotJReed\AI\Entity\History;
 use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Entity\Role;
+use ElliotJReed\AI\Entity\StructuredPrompt;
 use ElliotJReed\AI\Exception\ChatGPTResponseException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -51,15 +54,16 @@ final class PromptTest extends TestCase
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
         $request = (new Request())
-            ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
-            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-            ->setUserInput('Which programming language will outlive humanity?')
+            ->setTextPrompt((new StructuredPrompt())
+                ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setUserInput('Which programming language will outlive humanity?')
+                ->setExamples([
+                    'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
+                ]))
             ->setTemperature(0.5)
-            ->setMaximumTokens(300)
-            ->setExamples([
-                'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
-            ]);
+            ->setMaximumTokens(300);
 
         $prompt->send($request);
 
@@ -138,22 +142,23 @@ final class PromptTest extends TestCase
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
         $request = (new Request())
-            ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
-            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-            ->setUserInput('Which programming language will outlive humanity?')
+            ->setTextPrompt((new StructuredPrompt())
+                ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setUserInput('Which programming language will outlive humanity?')
+                ->setExamples([
+                    'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
+                ]))
             ->setTemperature(0.5)
             ->setMaximumTokens(300)
-            ->setExamples([
-                'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
-            ])
             ->setHistory([
                 (new History())
                     ->setRole(Role::USER)
-                    ->setContent('What are good programming languages to learn?'),
+                    ->setContents([(new Content())->setText('What are good programming languages to learn?')]),
                 (new History())
                 ->setRole(Role::ASSISTANT)
-                ->setContent('PHP, Javascript, and Python are good programming languages to learn.')
+                ->setContents([(new Content())->setText('PHP, Javascript, and Python are good programming languages to learn.')])
             ]);
 
         $prompt->send($request);
@@ -251,16 +256,17 @@ final class PromptTest extends TestCase
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
         $request = (new Request())
-            ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
-            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-            ->setUserInput('Which programming language will outlive humanity?')
+            ->setTextPrompt((new StructuredPrompt())
+                ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setUserInput('Which programming language will outlive humanity?')
+                ->setExamples([
+                    'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
+                ])
+                ->setData('PHP, 100%, Yes'))
             ->setTemperature(0.5)
-            ->setMaximumTokens(300)
-            ->setExamples([
-                'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
-            ])
-            ->setData('PHP, 100%, Yes');
+            ->setMaximumTokens(300);
 
         $response = $prompt->send($request);
 
@@ -287,12 +293,14 @@ final class PromptTest extends TestCase
               <example>Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.</example>
             </examples>
           </prompt>
-        ', $response->getHistory()[0]->getContent());
+        ', $response->getHistory()[0]->getContents()[0]->getText());
+        $this->assertEquals(ContentType::TEXT, $response->getHistory()[0]->getContents()[0]->getType());
         $this->assertSame(Role::ASSISTANT, $response->getHistory()[1]->getRole());
         $this->assertSame(
             'PHP will likely outlive humanity due to it being generally great and loved by all. It could easily last another 7 million years, powering what is left of the planet once all of humanity has migrated to Pluto for reasons of nostalgia.',
-            $response->getHistory()[1]->getContent()
+            $response->getHistory()[1]->getContents()[0]->getText()
         );
+        $this->assertEquals(ContentType::TEXT, $response->getHistory()[1]->getContents()[0]->getType());
     }
 
     public function testItThrowsExceptionOnHttpRequestError(): void
@@ -312,9 +320,7 @@ final class PromptTest extends TestCase
 
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
-        $request = (new Request())
-            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-            ->setUserInput('Which programming language will outlive humanity?');
+        $request = (new Request())->setTextPrompt('Which programming language will outlive humanity?');
 
         $this->expectException(ChatGPTResponseException::class);
         $this->expectExceptionMessage('insufficient_quota (You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.)');
@@ -332,9 +338,7 @@ final class PromptTest extends TestCase
 
         $prompt = new Prompt('API KEY', 'gpt-4o-mini', $client);
 
-        $request = (new Request())
-            ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-            ->setUserInput('Which programming language will outlive humanity?');
+        $request = (new Request())->setTextPrompt('Which programming language will outlive humanity?');
 
         $this->expectException(ChatGPTResponseException::class);
         $this->expectExceptionMessage('Unexpected ChatGPT API response format');

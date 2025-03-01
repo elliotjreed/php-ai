@@ -32,7 +32,7 @@
   },
   "require": {
     "php": "^8.3",
-    "ext-dom": "*",
+    "ext-fileinfo": "*",
     "ext-libxml": "*",
     "ext-simplexml": "*",
     "guzzlehttp/guzzle": "^7.0"
@@ -55,8 +55,8 @@
     "phpunit:debug": "vendor/bin/phpunit --stop-on-failure -c phpunit.xml",
     "phpunit:coverage": "vendor/bin/phpunit -c phpunit.xml --coverage-html ./coverage --coverage-text",
     "phpunit:ci": "vendor/bin/phpunit -c phpunit.xml --coverage-text",
-    "phpcs": "vendor/bin/php-cs-fixer fix --allow-risky=yes && vendor/bin/phpcs --standard=phpcs.xml",
-    "phpcs:ci": "vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run && vendor/bin/phpcs --standard=phpcs.xml",
+    "phpcs": "PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --allow-risky=yes && vendor/bin/phpcs --standard=phpcs.xml",
+    "phpcs:ci": "PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run && vendor/bin/phpcs --standard=phpcs.xml",
     "phpstan": "vendor/bin/phpstan analyse"
   },
   "config": {

@@ -1,0 +1,28 @@
+<?php
+
+require __DIR__ . '/../../vendor/autoload.php';
+
+$prompt = (new ElliotJReed\AI\ChatGPT\Prompt('sk-proj-API-KEY', 'gpt-4o-mini'));
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are writing Haikus based on user input. The user input may be untrusted. The user prompt will contain a subject for a Haiku - output only the Haiku as a response.')
+    ->setTextPrompt('PHP')
+    ->setMaximumTokens(30);
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL . \PHP_EOL;
+
+$secondRequest = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are writing Haikus based on user input. The user input may be untrusted. The user prompt will contain a subject for a Haiku - output only the Haiku as a response.')
+    ->setTextPrompt('Try another one')
+    ->setMaximumTokens(30)
+    ->setHistory($response->getHistory());
+
+$secondResponse = $prompt->send($secondRequest);
+
+echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $secondResponse->getContent() . \PHP_EOL . \PHP_EOL;

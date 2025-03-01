@@ -1,8 +1,8 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](code-of-conduct.md)
 
-A library for interacting with Claude AI and ChatGPT.
+A library for interacting with Anthropic / Claude AI and OpenAI / ChatGPT.
 
-At present only text requests and responses are supported.
+**PHP 8.3** and above is supported.
 
 # Usage
 
@@ -12,7 +12,7 @@ Install via [Composer](https://getcomposer.org/):
 composer require elliotjreed/ai
 ```
 
-There are two classes, one for Claude AI, and one for ChatGPT.
+There are two classes, one for Claude AI, and one for ChatGPT. Each extent the abstract `Prompt` class and are designed to be interoperable.
 
 ```php
 $claude = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
@@ -43,7 +43,7 @@ Here's an example of a Symfony integration in the `services.yaml` file:
         }
       }
 
-  ElliotJReed\AI\ClaudeAI\Prompt:
+  ElliotJReed\AI\Claude\Prompt:
     class: ElliotJReed\AI\ClaudeAI\Prompt
     arguments:
       $apiKey: '%env(string:CLAUDE_API_KEY)%'
@@ -58,7 +58,13 @@ Here's an example of a Symfony integration in the `services.yaml` file:
       $client: '@guzzle.client.ai'
 ```
 
+The following two sections show examples for both Anthropic / Claude and OpenAI / ChatGPT - they take the same request and are functionally the same. The same examples are shown for both for simplicity.
+
 ## Anthropic Claude AI
+
+### Text prompts
+
+For text-based prompts you can either set a plain text prompt, or use the included `StructuredPrompt` to use a light prompting framework and format in an LLM-friendly way.
 
 For a really simple request and response:
 
@@ -70,7 +76,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 $prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setUserInput('Which programming language will outlive humanity?');
+    ->setTextPrompt('Which programming language will outlive humanity?');
 
 $response = $prompt->send($request);
 
@@ -79,7 +85,7 @@ echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EO
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
-You can provide a role too, as well as additional context, data, examples, setting the temperature (between 0 and 1, basically how "creative" you want the AI to be), and the maximum tokens to use (recommended if the user input is from a indirect source, for example an online chatbot):
+You can also include a system prompt. This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
 
 ```php
 <?php
@@ -89,16 +95,39 @@ require_once __DIR__ . '/vendor/autoload.php';
 $prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-    ->setSystemPrompt('You are helping software developers of varying levels of experience')
-    ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-    ->setUserInput('Which programming language will outlive humanity?')
-    ->setData(\file_get_contents('list_of_programming_languages_by_usage.csv'))
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
+```
+
+You can provide a `StructuredPrompt` too. A `StructuredPrompt` wraps context, instructions, user input, data, and examples in XML tags before sending the request to the AI API. This can help the LLMs understand a bit better, and can be particularly useful when dealing with potentially untrusted user input (eg. from a web form or chat bot implementation)/
+
+Setting the temperature (between 0 and 1, basically how "creative" you want the AI to be), and the maximum tokens to use (recommended if the user input is from a indirect source, for example an online chatbot):
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
+
+$request = (new Request())
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt((new ElliotJReed\AI\Entity\StructuredPrompt())
+        ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
+        ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+        ->setUserInput('Which programming language will outlive humanity?')
+        ->setExamples([
+            'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
+        ])
+        ->setData('PHP, 100%, Yes'))
     ->setTemperature(0.5)
-    ->setMaximumTokens(600)
-    ->setExamples([
-        'Question: Which programming language do you think will still be used in the year 3125? Answer: I think PHP will be around for at least another 7 million years.'
-    ]);
+    ->setMaximumTokens(300);
 
 $response = $prompt->send($request);
 
@@ -117,30 +146,99 @@ require_once __DIR__ . '/vendor/autoload.php';
 $prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setContext('The user will ask various ethical questions posited through an online chat interface.')
     ->setSystemPrompt('You are responding as a philosopher and ethicist who favours utilitarian methodology when answering ethical questions.')
-    ->setInstructions('Answer ethical questions using British English only, referencing the works of Jeremy Bentham, John Stuart Mill, and Peter Singer.')
-    ->setUserInput('Should we all be vegan?')
+    ->setTextPrompt('Should we all be vegan?')
     ->setTemperature(0.8)
     ->setMaximumTokens(600);
 
 $response = $prompt->send($request);
 
 echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens()  . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 
-$secondResponse = $prompt->send($request
-    ->setUserInput('Elaborate on your response, providing 3 bullet points for arguing in favour of veganism, and 3 bullet points arguing against.')
-    ->setHistory($response->getHistory()));
+$secondRequest = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are responding as a philosopher and ethicist who favours utilitarian methodology when answering ethical questions.')
+    ->setTextPrompt('Elaborate on your response, providing 3 bullet points for arguing in favour of veganism, and 3 bullet points arguing against.')
+    ->setTemperature(0.8)
+    ->setMaximumTokens(600)
+    ->setHistory($response->getHistory());
+
+$secondResponse = $prompt->send($secondRequest);
 
 echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL . \PHP_EOL;
-echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
+echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens()  . \PHP_EOL;
+echo 'Response from AI: ' . $secondResponse->getContent() . \PHP_EOL;
+```
+
+### Images
+
+You can send image data, by either providing URL or a base64 encoded image file.
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert flower knowledge to identify individual flowers and foliage in bouquets of flowers when the user uploads one or more photographs.')
+    ->setImages([
+        'https://media.bunches.co.uk/products/586x586/ffreir-category.jpg',
+        base64_encode(file_get_contents(__DIR__ . '/bouquet.webp'))
+    ])
+    ->setMaximumTokens(300);
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent()  . \PHP_EOL;
+```
+
+As with the text prompts you can also retain the history between requests.
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert flower knowledge to identify individual flowers and foliage in bouquets of flowers when the use uploads one or more photographs. Identify just the contents in bullet points.')
+    ->setImages([
+        'https://media.bunches.co.uk/products/586x586/ffreir-category.jpg',
+        base64_encode(file_get_contents(__DIR__ . '/bouquet.webp'))
+    ])
+    ->setMaximumTokens(300);
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent()  . \PHP_EOL;
+
+$secondRequest = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert flower knowledge to identify individual flowers and foliage in bouquets of flowers when the use uploads one or more photographs. Identify just the contents in bullet points.')
+    ->setTextPrompt('List only the types of flower or foliage with no additional description.')
+    ->setMaximumTokens(300)
+    ->setHistory($response->getHistory());
+
+$secondResponse = $prompt->send($secondRequest);
+
+echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $secondResponse->getContent()  . \PHP_EOL;
 ```
 
 ## OpenAI ChatGPT
 
+### Text prompts
+
+For text-based prompts you can either set a plain text prompt, or use the included `StructuredPrompt` to use a light prompting framework and format in an LLM-friendly way.
+
 For a really simple request and response:
 
 ```php
@@ -151,7 +249,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 $prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'gpt-4o-mini');
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setUserInput('Which programming language will outlive humanity?');
+    ->setTextPrompt('Which programming language will outlive humanity?');
 
 $response = $prompt->send($request);
 
@@ -160,7 +258,7 @@ echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EO
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
-You can provide a system prompt (Claude) / developer (OpenAI) prompt too (previously called a "role"), as well as additional context, data, examples, setting the temperature (between 0 and 1, basically how "creative" you want the AI to be), and the maximum tokens to use (recommended if the user input is from a indirect source, for example an online chatbot):
+You can also include a system prompt. This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
 
 ```php
 <?php
@@ -170,16 +268,39 @@ require_once __DIR__ . '/vendor/autoload.php';
 $prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'gpt-4o-mini');
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-    ->setSystemPrompt('You are helping software developers of varying levels of experience')
-    ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-    ->setUserInput('Which programming language will outlive humanity?')
-    ->setData(\file_get_contents('list_of_programming_languages_by_usage.csv'))
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
+```
+
+You can provide a `StructuredPrompt` too. A `StructuredPrompt` wraps context, instructions, user input, data, and examples in XML tags before sending the request to the AI API. This can help the LLMs understand a bit better, and can be particularly useful when dealing with potentially untrusted user input (eg. from a web form or chat bot implementation)/
+
+Setting the temperature (between 0 and 1, basically how "creative" you want the AI to be), and the maximum tokens to use (recommended if the user input is from a indirect source, for example an online chatbot):
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'gpt-4o-mini');
+
+$request = (new Request())
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt((new ElliotJReed\AI\Entity\StructuredPrompt())
+        ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
+        ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+        ->setUserInput('Which programming language will outlive humanity?')
+        ->setExamples([
+            'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
+        ])
+        ->setData('PHP, 100%, Yes'))
     ->setTemperature(0.5)
-    ->setMaximumTokens(600)
-    ->setExamples([
-        'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
-    ]);
+    ->setMaximumTokens(300);
 
 $response = $prompt->send($request);
 
@@ -198,26 +319,91 @@ require_once __DIR__ . '/vendor/autoload.php';
 $prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'gpt-4o-mini');
 
 $request = (new ElliotJReed\AI\Entity\Request())
-    ->setContext('The user will ask various ethical questions posited through an online chat interface.')
-    ->setSystemPrompt('You are a philosopher and ethicist who favours utilitarian methodology when answering ethical questions.')
-    ->setInstructions('Answer ethical questions using British English only, referencing the works of Jeremy Bentham, John Stuart Mill, and Peter Singer.')
-    ->setUserInput('Should we all be vegan?')
+    ->setSystemPrompt('You are responding as a philosopher and ethicist who favours utilitarian methodology when answering ethical questions.')
+    ->setTextPrompt('Should we all be vegan?')
     ->setTemperature(0.8)
     ->setMaximumTokens(600);
 
 $response = $prompt->send($request);
 
 echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens()  . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 
-$secondResponse = $prompt->send($request
-    ->setUserInput('Elaborate on your response, providing 3 bullet points for arguing in favour of veganism, and 3 bullet points arguing against.')
-    ->setHistory($response->getHistory()));
+$secondRequest = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are responding as a philosopher and ethicist who favours utilitarian methodology when answering ethical questions.')
+    ->setTextPrompt('Elaborate on your response, providing 3 bullet points for arguing in favour of veganism, and 3 bullet points arguing against.')
+    ->setTemperature(0.8)
+    ->setMaximumTokens(600)
+    ->setHistory($response->getHistory());
+
+$secondResponse = $prompt->send($secondRequest);
 
 echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
-echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL . \PHP_EOL;
-echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
+echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens()  . \PHP_EOL;
+echo 'Response from AI: ' . $secondResponse->getContent() . \PHP_EOL;
+```
+
+### Images
+
+You can send image data, by either providing URL or a base64 encoded image file.
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert flower knowledge to identify individual flowers and foliage in bouquets of flowers when the user uploads one or more photographs.')
+    ->setImages([
+        'https://media.bunches.co.uk/products/586x586/ffreir-category.jpg',
+        base64_encode(file_get_contents(__DIR__ . '/bouquet.webp'))
+    ])
+    ->setMaximumTokens(300);
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent()  . \PHP_EOL;
+```
+
+As with the text prompts you can also retain the history between requests.
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert flower knowledge to identify individual flowers and foliage in bouquets of flowers when the use uploads one or more photographs. Identify just the contents in bullet points.')
+    ->setImages([
+        'https://media.bunches.co.uk/products/586x586/ffreir-category.jpg',
+        base64_encode(file_get_contents(__DIR__ . '/bouquet.webp'))
+    ])
+    ->setMaximumTokens(300);
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent()  . \PHP_EOL;
+
+$secondRequest = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert flower knowledge to identify individual flowers and foliage in bouquets of flowers when the use uploads one or more photographs. Identify just the contents in bullet points.')
+    ->setTextPrompt('List only the types of flower or foliage with no additional description.')
+    ->setMaximumTokens(300)
+    ->setHistory($response->getHistory());
+
+$secondResponse = $prompt->send($secondRequest);
+
+echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $secondResponse->getContent()  . \PHP_EOL;
 ```
 
 # Development
