@@ -4,26 +4,108 @@ declare(strict_types=1);
 
 namespace ElliotJReed\AI\Claude;
 
+use ElliotJReed\AI\AbstractPrompt;
 use ElliotJReed\AI\Entity\Content;
 use ElliotJReed\AI\Entity\ContentType;
 use ElliotJReed\AI\Entity\History;
+use ElliotJReed\AI\Entity\ImageSource;
+use ElliotJReed\AI\Entity\ImageSourceType;
+use ElliotJReed\AI\Entity\MediaType;
+use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Entity\Response;
 use ElliotJReed\AI\Entity\Role;
 use ElliotJReed\AI\Entity\Usage;
 use ElliotJReed\AI\Exception\ClaudeHttpClientException;
 use ElliotJReed\AI\Exception\ClaudeRequestException;
 use ElliotJReed\AI\Exception\ClaudeResponseException;
+use ElliotJReed\AI\Exception\UnsupportedImageMimeTypeException;
+use ElliotJReed\AI\Utility\MimeType;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 
-class Prompt extends \ElliotJReed\AI\Prompt
+class Prompt extends AbstractPrompt
 {
-    private const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
-    private const ANTHROPIC_VERSION = '2023-06-01';
+    private const string CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
+    private const string ANTHROPIC_VERSION = '2023-06-01';
 
-    protected function request(array $body): array
+    public function send(Request $request): Response
+    {
+        /** @var Content[] $contents */
+        $contents = [];
+        if (null !== $request->getTextPrompt()) {
+            $contents[] = $this->getTextPrompt($request->getTextPrompt());
+        }
+
+        foreach ($request->getImages() as $image) {
+            if (\str_starts_with($image, 'http')) {
+                $contents[] = (new Content())
+                    ->setType(ContentType::IMAGE)
+                    ->setSource((new ImageSource())
+                        ->setType(ImageSourceType::URL)
+                        ->setUrl($image));
+            } else {
+                $mimeType = MimeType::fromBase64EncodedFile($image);
+
+                if (!\in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+                    throw new UnsupportedImageMimeTypeException();
+                }
+
+                $contents[] = (new Content())
+                    ->setType(ContentType::IMAGE)
+                    ->setSource((new ImageSource())
+                        ->setType(ImageSourceType::BASE64)
+                        ->setMediaType(MediaType::from($mimeType))
+                        ->setData($image));
+            }
+        }
+
+        $history = $request->getHistory();
+        $history[] = (new History())
+            ->setRole(Role::USER)
+            ->setContents($contents);
+
+        $requestHistory = [];
+        foreach ($history as $historyItem) {
+            $requestHistory[] = $historyItem->toArray();
+        }
+
+        $requestBody = [
+            'model' => $this->model,
+            'max_tokens' => $request->getMaximumTokens(),
+            'temperature' => $request->getTemperature(),
+            'system' => $request->getSystemPrompt(),
+            'messages' => $requestHistory
+        ];
+
+        return $this->getResponse($requestBody, $history);
+    }
+
+    private function getResponse(array $requestBody, array $history): Response
+    {
+        $decoded = $this->request($requestBody);
+
+        return (new Response())
+            ->setId($decoded['id'])
+            ->setType($decoded['type'])
+            ->setRole(Role::from($decoded['role']))
+            ->setModel($decoded['model'])
+            ->setContent($decoded['content'][0]['text'])
+            ->setStopReason($decoded['stop_reason'])
+            ->setStopSequence($decoded['stop_sequence'])
+            ->setUsage((new Usage())
+                ->setInputTokens($decoded['usage']['input_tokens'])
+                ->setOutputTokens($decoded['usage']['output_tokens']))
+            ->setHistory([...$history, (new History())
+                ->setRole(Role::from($decoded['role']))
+                ->setContents([
+                    (new Content())->setType(ContentType::TEXT)->setText($decoded['content'][0]['text'])
+                ])
+            ]);
+    }
+
+    private function request(array $body): array
     {
         try {
             $response = $this->client->request(
@@ -65,28 +147,5 @@ class Prompt extends \ElliotJReed\AI\Prompt
         }
 
         return $decoded;
-    }
-
-    protected function getResponse(array $requestBody, array $history): Response
-    {
-        $decoded = $this->request($requestBody);
-
-        return (new Response())
-            ->setId($decoded['id'])
-            ->setType($decoded['type'])
-            ->setRole(Role::from($decoded['role']))
-            ->setModel($decoded['model'])
-            ->setContent($decoded['content'][0]['text'])
-            ->setStopReason($decoded['stop_reason'])
-            ->setStopSequence($decoded['stop_sequence'])
-            ->setUsage((new Usage())
-                ->setInputTokens($decoded['usage']['input_tokens'])
-                ->setOutputTokens($decoded['usage']['output_tokens']))
-            ->setHistory([...$history, (new History())
-                ->setRole(Role::from($decoded['role']))
-                ->setContents([
-                    (new Content())->setType(ContentType::TEXT)->setText($decoded['content'][0]['text'])
-                ])
-            ]);
     }
 }

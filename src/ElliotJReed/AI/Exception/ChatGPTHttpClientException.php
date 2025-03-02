@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace ElliotJReed\AI\Exception;
 
-class ChatGPTHttpClientException extends AIException
+final class ChatGPTHttpClientException extends ChatGPTException
 {
 }

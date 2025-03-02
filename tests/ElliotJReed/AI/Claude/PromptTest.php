@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ElliotJReed\Tests\AI\ClaudeAI;
+namespace ElliotJReed\Tests\AI\Claude;
 
 use ElliotJReed\AI\Claude\Prompt;
 use ElliotJReed\AI\Entity\Content;

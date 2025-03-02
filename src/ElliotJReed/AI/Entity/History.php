@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ElliotJReed\AI\Entity;
 
+use ElliotJReed\AI\Utility\HistoryFormatter;
+
 class History
 {
     private Role $role;
@@ -45,45 +47,7 @@ class History
     {
         $contents = [];
         foreach ($this->contents as $content) {
-            if (ContentType::TEXT === $content->getType()) {
-                $contents[] = [
-                    'type' => $content->getType(),
-                    'text' => $content->getText()
-                ];
-            }
-
-            if (ContentType::IMAGE === $content->getType()) {
-                if (ImageSourceType::BASE64 === $content->getSource()->getType()) {
-                    $contents[] = [
-                        'type' => $content->getType(),
-                        'source' => [
-                            'type' => $content->getSource()->getType()->value,
-                            'media_type' => $content->getSource()->getMediaType()->value,
-                            'data' => $content->getSource()->getData()
-                        ]
-                    ];
-                }
-
-                if (ImageSourceType::URL === $content->getSource()->getType()) {
-                    $contents[] = [
-                        'type' => $content->getType(),
-                        'source' => [
-                            'type' => $content->getSource()->getType()->value,
-                            'url' => $content->getSource()->getUrl()
-                        ]
-                    ];
-                }
-            }
-
-            if (ContentType::IMAGE_URL === $content->getType()) {
-                $contents[] = [
-                    'type' => $content->getType(),
-                    'image_url' => [
-                        'url' => $content->getSource()->getImageUrl()->getUrl(),
-                        'detail' => $content->getSource()->getImageUrl()->getDetail()
-                    ]
-                ];
-            }
+            $contents[] = HistoryFormatter::toArray($content);
         }
 
         return [

@@ -4,6 +4,38 @@ A library for interacting with Anthropic / Claude AI and OpenAI / ChatGPT.
 
 **PHP 8.3** and above is supported.
 
+- [Usage](#usage)
+    - [Anthropic Claude AI](#anthropic-claude-ai)
+        - [Text prompts](#text-prompts)
+        - [System (developer or role) prompt](#system-developer-or-role-prompt)
+        - [Structured prompt](#structured-prompt)
+        - [History](#history)
+        - [Images](#images)
+    - [OpenAI ChatGPT](#openai-chatgpt)
+        - [Text prompts](#text-prompts-1)
+        - [System (developer or role) prompt](#system-developer-or-role-prompt-1)
+        - [Structured prompt](#structured-prompt-1)
+        - [History](#history-1)
+        - [Images](#images-1)
+    - [Error handling](#error-handling)
+- [Testing](#testing)
+    - [Simple mock](#simple-mock)
+    - [Advanced](#advanced)
+- [Development](#development)
+    - [Getting Started](#getting-started)
+        - [Installing Composer](#installing-composer)
+        - [Installing](#installing)
+    - [Running the Tests](#running-the-tests)
+        - [Unit tests](#unit-tests)
+            - [Debugging](#debugging)
+    - [Code formatting](#code-formatting)
+        - [Running everything](#running-everything)
+        - [Outdated dependencies](#outdated-dependencies)
+        - [Validating Composer configuration](#validating-composer-configuration)
+        - [Running via GNU Make](#running-via-gnu-make)
+        - [Running the tests on a Continuous Integration platform (eg. Github Actions)](#running-the-tests-on-a-continuous-integration-platform-eg-github-actions)
+            - [Github Actions](#github-actions)
+
 # Usage
 
 Install via [Composer](https://getcomposer.org/):
@@ -85,6 +117,8 @@ echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EO
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
+### System (developer or role) prompt
+
 You can also include a system prompt. This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
 
 ```php
@@ -104,6 +138,8 @@ echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
 echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
+
+### Structured prompt
 
 You can provide a `StructuredPrompt` too. A `StructuredPrompt` wraps context, instructions, user input, data, and examples in XML tags before sending the request to the AI API. This can help the LLMs understand a bit better, and can be particularly useful when dealing with potentially untrusted user input (eg. from a web form or chat bot implementation)/
 
@@ -135,6 +171,8 @@ echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
 echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
+
+### History
 
 If you want to keep a conversation going (like you would on ChatGPT or Claude's website or app), you can pass through the history from the previous response to a new request:
 
@@ -258,6 +296,8 @@ echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EO
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
 
+### System (developer or role) prompt
+
 You can also include a system prompt. This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
 
 ```php
@@ -277,6 +317,8 @@ echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
 echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
+
+### Structured prompt
 
 You can provide a `StructuredPrompt` too. A `StructuredPrompt` wraps context, instructions, user input, data, and examples in XML tags before sending the request to the AI API. This can help the LLMs understand a bit better, and can be particularly useful when dealing with potentially untrusted user input (eg. from a web form or chat bot implementation)/
 
@@ -308,6 +350,8 @@ echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
 echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 ```
+
+### History
 
 If you want to keep a conversation going (like you would on ChatGPT or Claude's website or app), you can pass through the history from the previous response to a new request:
 
@@ -404,6 +448,165 @@ $secondResponse = $prompt->send($secondRequest);
 echo 'Used input tokens: ' . $secondResponse->getUsage()->getInputTokens() . \PHP_EOL;
 echo 'Used output tokens: ' . $secondResponse->getUsage()->getOutputTokens() . \PHP_EOL;
 echo 'Response from AI: ' . $secondResponse->getContent()  . \PHP_EOL;
+```
+
+## Error handling
+
+All exceptions extend the base `AIException`.
+
+# Testing
+
+## Simple mock
+
+For convenience, there are two mock classes which can be used for simple unit tests, once for Claude (`ElliotJReed\AI\Double\ClaudePromptMock`) and one for ChatGPT(`ElliotJReed\AI\Double\ChatGPTPromptMock`).
+
+One for each is provided as the underlying API requests differ, and the `History` between the two providers differ, even if the `Request` and usage is the same.
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Double\ClaudePromptMock('API KEY', 'test-model');
+
+$prompt->response = 'Mocked response here!'
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL; // Output: 'Mocked response here!'
+
+print_r($response->getHistory());
+```
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$prompt = new ElliotJReed\AI\Double\ChatGPTPromptMock('API KEY', 'test-model');
+
+$prompt->response = 'Mocked response here!'
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL; // Output: 'Mocked response here!'
+
+print_r($response->getHistory());
+```
+
+## Advanced
+
+For more complex requirements, you could use the Claude or ChatGPT `Prompt` classes directly and mock the raw response using Guzzle.
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$mock = new MockHandler([new Response(200, [], '{
+    "id": "msg_01Bblahblahnaughtygoose",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-3-5-haiku-latest",
+    "content": [
+      {
+        "type": "text",
+        "text": "Mocked response here!"
+      }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "usage": {
+      "input_tokens": 100,
+      "output_tokens": 20
+    }
+  }
+')]);
+
+$client = new Client([
+    'base_uri' => 'https://0.0.0.0',
+    'handler' => HandlerStack::create($mock)
+]);
+
+$prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'test-model', $client);
+
+$prompt->response = 'Mocked response here!'
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL; // Output: 'Mocked response here!'
+
+print_r($response->getHistory());
+```
+
+```php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$mock = new MockHandler([new Response(200, [], '{
+  "id": "chatcmpl-happymoosegoesboopboop",
+  "object": "chat.completion",
+  "created": 1723486738,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "PHP will likely outlive humanity due to it being generally great and loved by all. It could easily last another 7 million years, powering what is left of the planet once all of humanity has migrated to Pluto for reasons of nostalgia.",
+        "refusal": null
+      },
+      "logprobs": null,
+      "finish_reason": "length"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 60,
+    "completion_tokens": 29,
+    "total_tokens": 89
+  },
+  "system_fingerprint": "fp_boopityboop"
+}')]);
+
+$client = new Client([
+    'base_uri' => 'https://0.0.0.0',
+    'handler' => HandlerStack::create($mock)
+]);
+
+$prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'test-model', $client);
+
+$prompt->response = 'Mocked response here!'
+
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+    ->setTextPrompt('Which programming language will outlive humanity?');
+
+$response = $prompt->send($request);
+
+echo 'Used input tokens: ' . $response->getUsage()->getInputTokens() . \PHP_EOL;
+echo 'Used output tokens: ' . $response->getUsage()->getOutputTokens() . \PHP_EOL;
+echo 'Response from AI: ' . $response->getContent() . \PHP_EOL; // Output: 'Mocked response here!'
+
+print_r($response->getHistory());
 ```
 
 # Development
