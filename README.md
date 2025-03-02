@@ -510,12 +510,14 @@ print_r($response->getHistory());
 
 For more complex requirements, you could use the Claude or ChatGPT `Prompt` classes directly and mock the raw response using Guzzle.
 
+Refer to the Anthropic and OpenAI API documentation for raw response examples. Or view the source code of this library.
+
 ```php
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$mock = new MockHandler([new Response(200, [], '{
+$mock = new GuzzleHttp\Handler\MockHandler([new GuzzleHttp\Psr7\Response(200, [], '{
     "id": "msg_01Bblahblahnaughtygoose",
     "type": "message",
     "role": "assistant",
@@ -535,9 +537,9 @@ $mock = new MockHandler([new Response(200, [], '{
   }
 ')]);
 
-$client = new Client([
+$client = new GuzzleHttp\Client([
     'base_uri' => 'https://0.0.0.0',
-    'handler' => HandlerStack::create($mock)
+    'handler' => GuzzleHttp\HandlerStack::create($mock)
 ]);
 
 $prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'test-model', $client);
@@ -562,7 +564,7 @@ print_r($response->getHistory());
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$mock = new MockHandler([new Response(200, [], '{
+$mock = new GuzzleHttp\Handler\MockHandler([new GuzzleHttp\Psr7\Response(200, [], '{
   "id": "chatcmpl-happymoosegoesboopboop",
   "object": "chat.completion",
   "created": 1723486738,
@@ -587,9 +589,9 @@ $mock = new MockHandler([new Response(200, [], '{
   "system_fingerprint": "fp_boopityboop"
 }')]);
 
-$client = new Client([
+$client = new GuzzleHttp\Client([
     'base_uri' => 'https://0.0.0.0',
-    'handler' => HandlerStack::create($mock)
+    'handler' => GuzzleHttp\HandlerStack::create($mock)
 ]);
 
 $prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'test-model', $client);
