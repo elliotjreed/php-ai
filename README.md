@@ -76,7 +76,7 @@ Here's an example of a Symfony integration in the `services.yaml` file:
       }
 
   ElliotJReed\AI\Claude\Prompt:
-    class: ElliotJReed\AI\ClaudeAI\Prompt
+    class: ElliotJReed\AI\Claude\Prompt
     arguments:
       $apiKey: '%env(string:CLAUDE_API_KEY)%'
       $model: 'claude-3-5-haiku-latest'
