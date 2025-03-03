@@ -52,7 +52,7 @@ final class PromptTest extends TestCase
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
             ->setTextPrompt((new StructuredPrompt())
                 ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.')
                 ->setUserInput('Which programming language will outlive humanity?')
                 ->setExamples([
                     'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
@@ -70,7 +70,7 @@ final class PromptTest extends TestCase
             {
               "content": [
                 {
-                  "text": "<prompt><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><![CDATA[Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.]]></example></examples></prompt>",
+                  "text": "<prompt><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><![CDATA[Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.]]></example></examples></prompt>",
                   "type": "text"
                 }
               ],
@@ -86,7 +86,7 @@ final class PromptTest extends TestCase
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
           <prompt>
             <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
-            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
+            <instructions>Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are &lt;br /&gt; tags.</instructions>
             <user_input>Which programming language will outlive humanity?</user_input>
             <examples>
               <example>Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.</example>
@@ -127,7 +127,7 @@ final class PromptTest extends TestCase
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
             ->setTextPrompt((new StructuredPrompt())
                 ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.')
                 ->setUserInput('Which programming language will outlive humanity?')
                 ->setExamples([
                     'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
@@ -171,7 +171,7 @@ final class PromptTest extends TestCase
             {
               "content": [
                 {
-                  "text": "<prompt><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user query in a friendly, and clear and concise manner]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><![CDATA[Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.]]></example></examples></prompt>",
+                  "text": "<prompt><context><![CDATA[The user input is coming from a software development advice website which provides information to aspiring software developers.]]></context><instructions><![CDATA[Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.]]></instructions><user_input><![CDATA[Which programming language will outlive humanity?]]></user_input><examples><example><![CDATA[Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.]]></example></examples></prompt>",
                   "type": "text"
                 }
               ],
@@ -187,7 +187,7 @@ final class PromptTest extends TestCase
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
           <prompt>
             <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
-            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
+            <instructions>Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are &lt;br /&gt; tags.</instructions>
             <user_input>Which programming language will outlive humanity?</user_input>
             <examples>
               <example>Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.</example>
@@ -228,7 +228,7 @@ final class PromptTest extends TestCase
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
             ->setTextPrompt((new StructuredPrompt())
                 ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.')
                 ->setUserInput('Which programming language will outlive humanity?')
                 ->setExamples([
                     'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
@@ -255,7 +255,7 @@ final class PromptTest extends TestCase
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
           <prompt>
             <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
-            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
+            <instructions>Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are &lt;br /&gt; tags.</instructions>
             <user_input>Which programming language will outlive humanity?</user_input>
             <data>PHP, 100%, Yes</data>
             <examples>

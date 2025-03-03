@@ -20,7 +20,7 @@ final class ClaudePromptMockTest extends TestCase
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
             ->setTextPrompt((new StructuredPrompt())
                 ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.')
                 ->setUserInput('Which programming language will outlive humanity?')
                 ->setExamples([
                     'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
@@ -47,7 +47,7 @@ final class ClaudePromptMockTest extends TestCase
         $this->assertXmlStringEqualsXmlString('<?xml version="1.0"?>
           <prompt>
             <context>The user input is coming from a software development advice website which provides information to aspiring software developers.</context>
-            <instructions>Answer the user query in a friendly, and clear and concise manner</instructions>
+            <instructions>Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are &lt;br /&gt; tags.</instructions>
             <user_input>Which programming language will outlive humanity?</user_input>
             <data>PHP, 100%, Yes</data>
             <examples>
@@ -74,7 +74,7 @@ final class ClaudePromptMockTest extends TestCase
             ->setSystemPrompt('You are helping software developers of varying levels of experience')
             ->setTextPrompt((new StructuredPrompt())
                 ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-                ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
+                ->setInstructions('Answer the user query in a friendly, and clear and concise manner. The only permitted HTML elements are <br /> tags.')
                 ->setUserInput('Which programming language will outlive humanity?')
                 ->setExamples([
                     'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'

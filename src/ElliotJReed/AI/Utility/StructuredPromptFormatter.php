@@ -38,7 +38,7 @@ final class StructuredPromptFormatter
             }
         }
 
-        return \trim(self::trimXmlDeclaration(self::preserveXmlCdata($xml->asXML())));
+        return \trim(self::trimXmlDeclaration(self::preserveRawXmlElements($xml->asXML())));
     }
 
     private static function trimXmlDeclaration(string $string): string
@@ -57,30 +57,8 @@ final class StructuredPromptFormatter
         return '<![CDATA[' . \trim($input) . ']]>';
     }
 
-    private static function preserveXmlCdata(string $input): string
+    private static function preserveRawXmlElements(string $input): string
     {
-        return \str_replace([
-            '<context>&lt;![CDATA[',
-            '<instructions>&lt;![CDATA[',
-            '<user_input>&lt;![CDATA[',
-            '<example>&lt;![CDATA[',
-            '<data>&lt;![CDATA[',
-            ']]&gt;</context>',
-            ']]&gt;</instructions>',
-            ']]&gt;</user_input>',
-            ']]&gt;</example>',
-            ']]&gt;</data>'
-        ], [
-            '<context><![CDATA[',
-            '<instructions><![CDATA[',
-            '<user_input><![CDATA[',
-            '<example><![CDATA[',
-            '<data><![CDATA[',
-            ']]></context>',
-            ']]></instructions>',
-            ']]></user_input>',
-            ']]></example>',
-            ']]></data>'
-        ], $input);
+        return \html_entity_decode(\htmlspecialchars_decode($input), \ENT_QUOTES, 'UTF-8');
     }
 }
