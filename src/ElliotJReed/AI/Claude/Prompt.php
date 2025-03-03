@@ -14,12 +14,14 @@ use ElliotJReed\AI\Entity\MediaType;
 use ElliotJReed\AI\Entity\Request;
 use ElliotJReed\AI\Entity\Response;
 use ElliotJReed\AI\Entity\Role;
+use ElliotJReed\AI\Entity\StructuredPrompt;
 use ElliotJReed\AI\Entity\Usage;
 use ElliotJReed\AI\Exception\ClaudeHttpClientException;
 use ElliotJReed\AI\Exception\ClaudeRequestException;
 use ElliotJReed\AI\Exception\ClaudeResponseException;
 use ElliotJReed\AI\Exception\UnsupportedImageMimeTypeException;
 use ElliotJReed\AI\Utility\MimeType;
+use ElliotJReed\AI\Utility\StructuredPromptFormatter;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use JsonException;
@@ -71,11 +73,16 @@ class Prompt extends AbstractPrompt
             $requestHistory[] = $historyItem->toArray();
         }
 
+        $systemPrompt = $request->getSystemPrompt();
+        if ($systemPrompt instanceof StructuredPrompt) {
+            $systemPrompt = StructuredPromptFormatter::toXml($systemPrompt);
+        }
+
         $requestBody = [
             'model' => $this->model,
             'max_tokens' => $request->getMaximumTokens(),
             'temperature' => $request->getTemperature(),
-            'system' => $request->getSystemPrompt(),
+            'system' => $systemPrompt,
             'messages' => $requestHistory
         ];
 

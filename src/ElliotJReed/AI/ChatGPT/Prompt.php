@@ -31,14 +31,14 @@ class Prompt extends AbstractPrompt
     public function send(Request $request): Response
     {
         $requestHistory = [];
-        $requestHistory[] = (new History())
-            ->setRole(Role::DEVELOPER)
-            ->setContents([
-                (new Content())
-                    ->setType(ContentType::TEXT)
-                    ->setText($request->getSystemPrompt())
-            ])
-            ->toArray();
+        if (null !== $request->getSystemPrompt()) {
+            $requestHistory[] = (new History())
+                ->setRole(Role::DEVELOPER)
+                ->setContents([
+                    $this->getTextPrompt($request->getSystemPrompt())
+                ])
+                ->toArray();
+        }
 
         /** @var Content[] $contents */
         $contents = [];
