@@ -96,7 +96,7 @@ The following two sections show examples for both Anthropic / Claude and OpenAI 
 
 ### Text prompts
 
-For text-based prompts you can either set a plain text prompt, or use the included `StructuredPrompt` to use a light prompting framework and format in an LLM-friendly way.
+For text-based prompts you can either set a plain text prompt, or use the included [`StructuredPrompt`](#structured-prompt) to use a light prompting framework and format in an LLM-friendly way.
 
 For a really simple request and response:
 
@@ -119,7 +119,7 @@ echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 
 ### System (developer or role) prompt
 
-You can also include a system prompt. This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
+You can also include a system prompt as either a string or a [`StructuredPrompt`](#structured-prompt). This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
 
 ```php
 <?php
@@ -152,17 +152,16 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $prompt = new ElliotJReed\AI\Claude\Prompt('API KEY', 'claude-3-5-haiku-latest');
 
-$request = (new Request())
-    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are responding to customer queries from a web form.')
+    ->setSystemPrompt((new ElliotJReed\AI\Entity\StructuredPrompt())
+        ->setContext('The customer is querying via a form on a e-commerce website based in the United Kingdom.')
+        ->setInstructions('Respond using the data from the FAQs in a friendly and accurate way using British English.')
+        ->setData('FAQs. Q: Do you offer next day deliver. A: Yes we do, however we do not offer same day delivery.')
+        ->setExamples(['Hello! Unfortunately we are not open on Bank Holidays.']))
     ->setTextPrompt((new ElliotJReed\AI\Entity\StructuredPrompt())
-        ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-        ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-        ->setUserInput('Which programming language will outlive humanity?')
-        ->setExamples([
-            'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
-        ])
-        ->setData('PHP, 100%, Yes'))
-    ->setTemperature(0.5)
+        ->setContext('The current date and time is: ' . (new DateTime())->format('Y-m-d H:i:s'))
+        ->setUserInput('Can you deliver today at my address?'))
     ->setMaximumTokens(300);
 
 $response = $prompt->send($request);
@@ -275,7 +274,7 @@ echo 'Response from AI: ' . $secondResponse->getContent()  . \PHP_EOL;
 
 ### Text prompts
 
-For text-based prompts you can either set a plain text prompt, or use the included `StructuredPrompt` to use a light prompting framework and format in an LLM-friendly way.
+For text-based prompts you can either set a plain text prompt, or use the included [`StructuredPrompt`](#structured-prompt-1) to use a light prompting framework and format in an LLM-friendly way.
 
 For a really simple request and response:
 
@@ -298,7 +297,7 @@ echo 'Response from AI: ' . $response->getContent() . \PHP_EOL;
 
 ### System (developer or role) prompt
 
-You can also include a system prompt. This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
+You can also include a system prompt as either a string or a [`StructuredPrompt`](#structured-prompt-1). This takes priority in terms of instructions over the user prompts. For example, you could let the LLM know what role it is taking on.
 
 ```php
 <?php
@@ -331,17 +330,16 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $prompt = new ElliotJReed\AI\ChatGPT\Prompt('API KEY', 'gpt-4o-mini');
 
-$request = (new Request())
-    ->setSystemPrompt('You are using expert software development knowledge to help software developers of varying levels of experience')
+$request = (new ElliotJReed\AI\Entity\Request())
+    ->setSystemPrompt('You are responding to customer queries from a web form.')
+    ->setSystemPrompt((new ElliotJReed\AI\Entity\StructuredPrompt())
+        ->setContext('The customer is querying via a form on a e-commerce website based in the United Kingdom.')
+        ->setInstructions('Respond using the data from the FAQs in a friendly and accurate way using British English.')
+        ->setData('FAQs. Q: Do you offer next day deliver. A: Yes we do, however we do not offer same day delivery.')
+        ->setExamples(['Hello! Unfortunately we are not open on Bank Holidays.']))
     ->setTextPrompt((new ElliotJReed\AI\Entity\StructuredPrompt())
-        ->setContext('The user input is coming from a software development advice website which provides information to aspiring software developers.')
-        ->setInstructions('Answer the user query in a friendly, and clear and concise manner')
-        ->setUserInput('Which programming language will outlive humanity?')
-        ->setExamples([
-            'Question: Which programming language do you think will still be used in the year 3125?. Answer: I think PHP will be around for at least another 7 million years.'
-        ])
-        ->setData('PHP, 100%, Yes'))
-    ->setTemperature(0.5)
+        ->setContext('The current date and time is: ' . (new DateTime())->format('Y-m-d H:i:s'))
+        ->setUserInput('Can you deliver today at my address?'))
     ->setMaximumTokens(300);
 
 $response = $prompt->send($request);

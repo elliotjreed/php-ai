@@ -33,8 +33,6 @@ class History
 
     /**
      * @param Content[] $contents
-     *
-     * @return $this
      */
     public function setContents(array $contents): self
     {

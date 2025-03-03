@@ -89,8 +89,6 @@ class Response
 
     /**
      * @param string $stopReason The reason that the AI assistant stopped output (ie. the model reached a natural stopping point, the maximum tokens set was reached, the stop sequence was generated)
-     *
-     * @return $this
      */
     public function setStopReason(string $stopReason): self
     {
@@ -109,8 +107,6 @@ class Response
 
     /**
      * @param string|null $stopSequence Which custom stop sequence was generated, if any
-     *
-     * @return $this
      */
     public function setStopSequence(?string $stopSequence): self
     {
@@ -129,8 +125,6 @@ class Response
 
     /**
      * @param Usage $usage Billing and rate-limit usage
-     *
-     * @return $this
      */
     public function setUsage(Usage $usage): self
     {

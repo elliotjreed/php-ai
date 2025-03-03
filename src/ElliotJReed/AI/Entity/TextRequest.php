@@ -25,8 +25,6 @@ class TextRequest extends Request
 
     /**
      * @param string|null $context Background information sent in the user prompt
-     *
-     * @return $this
      */
     public function setContext(?string $context): self
     {
@@ -45,8 +43,6 @@ class TextRequest extends Request
 
     /**
      * @param string|null $instructions Instructions sent in the user prompt (higher level trusted instructions should be set in the system prompt: setSystemPrompt())
-     *
-     * @return $this
      */
     public function setInstructions(?string $instructions): self
     {
@@ -65,8 +61,6 @@ class TextRequest extends Request
 
     /**
      * @param string|null $userInput User input sent in the user prompt (this could be untrusted input, eg. from a web form or live chat)
-     *
-     * @return $this
      */
     public function setUserInput(?string $userInput): self
     {
@@ -85,8 +79,6 @@ class TextRequest extends Request
 
     /**
      * @param string|null $data Data sent in the user prompt (eg. CSV contents)
-     *
-     * @return $this
      */
     public function setData(?string $data): self
     {

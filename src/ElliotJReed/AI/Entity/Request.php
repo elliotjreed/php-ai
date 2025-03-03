@@ -6,7 +6,7 @@ namespace ElliotJReed\AI\Entity;
 
 class Request
 {
-    private ?string $systemPrompt = null;
+    private StructuredPrompt | string | null $systemPrompt = null;
     private float $temperature = 1.0;
     private int $maximumTokens = 10000;
     private string | StructuredPrompt | null $textPrompt = null;
@@ -21,19 +21,17 @@ class Request
     private array $history = [];
 
     /**
-     * @return string|null Instructions to the model that are prioritised ahead of user messages
+     * @return StructuredPrompt|string|null Instructions to the model that are prioritised ahead of user messages
      */
-    public function getSystemPrompt(): ?string
+    public function getSystemPrompt(): StructuredPrompt | string | null
     {
         return $this->systemPrompt;
     }
 
     /**
-     * @param string|null $systemPrompt Instructions to the model that are prioritised ahead of user messages
-     *
-     * @return $this
+     * @param StructuredPrompt|string|null $systemPrompt Instructions to the model that are prioritised ahead of user messages
      */
-    public function setSystemPrompt(?string $systemPrompt): self
+    public function setSystemPrompt(StructuredPrompt | string | null $systemPrompt): self
     {
         $this->systemPrompt = $systemPrompt;
 
@@ -50,8 +48,6 @@ class Request
 
     /**
      * @param float $temperature Amount of randomness injected into the response. Defaults to 1.0. Ranges from 0.0 to 1.0. Use temperature closer to 0.0 for analytical / multiple choice, and closer to 1.0 for creative and generative tasks. Note that even with temperature of 0.0, the results will not be fully deterministic.
-     *
-     * @return $this
      */
     public function setTemperature(float $temperature): self
     {
@@ -70,8 +66,6 @@ class Request
 
     /**
      * @param int $maximumTokens The maximum number of tokens to generate before stopping. Note that the models may stop before reaching this maximum. This parameter only specifies the absolute maximum number of tokens to generate.
-     *
-     * @return $this
      */
     public function setMaximumTokens(int $maximumTokens): self
     {
@@ -120,8 +114,6 @@ class Request
 
     /**
      * @param string[] $images An array of image URLs or base64 encoded image content
-     *
-     * @return $this
      */
     public function setImages(array $images): self
     {
