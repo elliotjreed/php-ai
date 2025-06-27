@@ -41,7 +41,7 @@
     "friendsofphp/php-cs-fixer": "*",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-phpunit": "^2.0",
-    "phpunit/phpunit": "^12.0",
+    "phpunit/phpunit": "^12.2",
     "roave/security-advisories": "dev-master",
     "squizlabs/php_codesniffer": "*"
   },

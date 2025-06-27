@@ -18,13 +18,14 @@ use ElliotJReed\AI\Entity\Usage;
 use ElliotJReed\AI\Exception\ChatGPTHttpClientException;
 use ElliotJReed\AI\Exception\ChatGPTRequestException;
 use ElliotJReed\AI\Exception\ChatGPTResponseException;
+use ElliotJReed\AI\PromptInterface;
 use ElliotJReed\AI\Utility\MimeType;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 
-class Prompt extends AbstractPrompt
+class Prompt extends AbstractPrompt implements PromptInterface
 {
     private const string CHATGPT_URL = 'https://api.openai.com/v1/chat/completions';
 

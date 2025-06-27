@@ -13,7 +13,7 @@ use ElliotJReed\AI\Utility\StructuredPromptFormatter;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 
-abstract class AbstractPrompt
+abstract class AbstractPrompt implements PromptInterface
 {
     public function __construct(
         protected readonly string $apiKey,

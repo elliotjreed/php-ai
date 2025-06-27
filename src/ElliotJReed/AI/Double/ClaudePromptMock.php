@@ -16,9 +16,10 @@ use ElliotJReed\AI\Entity\Response;
 use ElliotJReed\AI\Entity\Role;
 use ElliotJReed\AI\Entity\Usage;
 use ElliotJReed\AI\Exception\UnsupportedImageMimeTypeException;
+use ElliotJReed\AI\PromptInterface;
 use ElliotJReed\AI\Utility\MimeType;
 
-class ClaudePromptMock extends Prompt
+class ClaudePromptMock extends Prompt implements PromptInterface
 {
     /**
      * @var string Optional. Set a custom text response.

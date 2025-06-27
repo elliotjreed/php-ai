@@ -20,6 +20,7 @@ use ElliotJReed\AI\Exception\ClaudeHttpClientException;
 use ElliotJReed\AI\Exception\ClaudeRequestException;
 use ElliotJReed\AI\Exception\ClaudeResponseException;
 use ElliotJReed\AI\Exception\UnsupportedImageMimeTypeException;
+use ElliotJReed\AI\PromptInterface;
 use ElliotJReed\AI\Utility\MimeType;
 use ElliotJReed\AI\Utility\StructuredPromptFormatter;
 use GuzzleHttp\Exception\RequestException;
@@ -27,7 +28,7 @@ use GuzzleHttp\RequestOptions;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 
-class Prompt extends AbstractPrompt
+class Prompt extends AbstractPrompt implements PromptInterface
 {
     private const string CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
     private const string ANTHROPIC_VERSION = '2023-06-01';

@@ -90,6 +90,37 @@ Here's an example of a Symfony integration in the `services.yaml` file:
       $client: '@guzzle.client.ai'
 ```
 
+Here's an example of a Symfony integration in the `services.yaml` file using the interface:
+
+```yaml
+  guzzle.client.ai:
+    class: GuzzleHttp\Client
+    arguments:
+      - {
+        timeout: 10,
+        headers: {
+          'User-Agent': 'My Symfony Project'
+        }
+      }
+
+  ElliotJReed\AI\PromptInterface:
+    class: ElliotJReed\AI\ChatGPT\Prompt
+    arguments:
+      $apiKey: '%env(string:CHATGPT_API_KEY)%'
+      $model: 'gpt-4o-mini'
+      $client: '@guzzle.client.ai'
+```
+
+By using the `PromptInterface` you can use it in your application like:
+
+```php
+<?php
+
+public function __construct(private \ElliotJReed\AI\Claude\PromptInterface $aiClient)
+{
+}
+```
+
 The following two sections show examples for both Anthropic / Claude and OpenAI / ChatGPT - they take the same request and are functionally the same. The same examples are shown for both for simplicity.
 
 ## Anthropic Claude AI
